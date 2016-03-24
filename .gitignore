@@ -1,2 +1,10 @@
 LuaJIT/
 bin/
+*.o
+*.obj
+*.a
+*.lib
+*.so
+*.dll
+*.exe
+hqnes
