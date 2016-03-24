@@ -5,6 +5,7 @@ bin/
 *.a
 *.lib
 *.so
+*.so.*
 *.dll
 *.exe
 hqnes

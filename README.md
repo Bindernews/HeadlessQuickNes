@@ -21,7 +21,8 @@ command prompt.
 # Running
 ## Linux
 When HQN is run it will say it is missing a required library. Copy LuaJIT/src/libluajit.so
-to the directory where hqnes is and rename it to the name of the required library.
+to the directory where hqnes is and rename it to the name of the required library. This will
+usually be something like `libluajit-5.1.so.2`.
 
 ## Windows
 Copy lua51.dll to the directory where hqnes.exe is located.

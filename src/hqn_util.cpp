@@ -29,6 +29,7 @@ bool load_file(const char *filename, char **data, size_t *size)
     char *dataInsert;
     size_t dataSize;
     size_t readAmount;
+    FILE *fd;
 
     if (!fileSize(filename, &dataSize))
     { goto read_failed; }
@@ -37,7 +38,7 @@ bool load_file(const char *filename, char **data, size_t *size)
     dataInsert = dataRef;
     readAmount = 0; // how many bytes we read
 
-    FILE *fd = fopen(filename, "rb");
+    fd = fopen(filename, "rb");
     if (!fd)
     { goto read_failed; }
 
@@ -46,7 +47,6 @@ bool load_file(const char *filename, char **data, size_t *size)
         readAmount = fread(dataInsert, 1, dataSize - (dataInsert - dataRef), fd);
         dataInsert += readAmount;
     } while (readAmount != 0);
-
     fclose(fd);
     
     *data = dataRef;

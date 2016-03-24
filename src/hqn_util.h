@@ -2,6 +2,7 @@
 #define __HQN_UTIL_H__
 
 #include <cstdint>
+#include <cstdlib>
 
 namespace hqn_util
 {

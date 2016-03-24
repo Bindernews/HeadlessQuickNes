@@ -17,17 +17,18 @@ SOURCES = \
 
 OBJECTS = $(SOURCES:.cpp=.o)
 
+%.o: %.cpp
+	$(CXX) -c -o $@ $< $(CXXFLAGS)
+
+$(TARGET): $(OBJECTS) $(LIB_QUICKNES) $(LIB_LUAJIT)
+	$(CXX) -o $@ $(OBJECTS) $(LINKFLAGS)
+
 $(LIB_QUICKNES):
 	$(MAKE) -C ../quicknes/linux
 
 $(LIB_LUAJIT):
 	$(MAKE) -C ../LuaJIT/src
 
-%.o: %.cpp
-	$(CXX) -c -o $@ $< $(CXXFLAGS)
-
-$(TARGET): $(OBJECTS) $(LIB_QUICKNES) $(LIB_LUAJIT)
-	$(CXX) -o $@ $(OBJECTS) $(LINKFLAGS)
 
 clean:
 	$(RM) $(OBJECTS)

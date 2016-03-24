@@ -46,11 +46,11 @@ OBJS = $(SRCS:.cpp=.o)
 %.o: %.cpp
 	$(CXX) -c -o $@ $< $(CXXFLAGS)
 
-$(TARGET_DYNAMIC) : $(OBJS)
-	$(CXX) -shared -o $@ $(OBJS)
-
 $(TARGET_STATIC): $(OBJS)
 	$(AR) rvs $@ $(OBJS)
+
+$(TARGET_DYNAMIC) : $(OBJS)
+	$(CXX) -shared -o $@ $(OBJS)
 
 clean:
 	$(RM) $(OBJS)
