@@ -24,6 +24,11 @@ Save the data into the named file.
 */
 bool save_file(const char *filename, const char *data, size_t size);
 
+/*
+Return true if the file exists and false otherwise.
+*/
+bool file_exists(const char *filename);
+
 
 /* Compare ascii strings in a case-insensitive manner. */
 int stricmp(char const *a, char const *b);

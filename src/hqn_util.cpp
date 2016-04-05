@@ -76,6 +76,12 @@ bool save_file(const char *filename, const char *data, size_t size)
     return true;
 }
 
+bool file_exists(const char *filename)
+{
+    struct stat s;
+    return stat(filename, &s) == 0;
+}
+
 
 int stricmp(char const *a, char const *b)
 {

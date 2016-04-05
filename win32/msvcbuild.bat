@@ -16,14 +16,26 @@
 @set SRC_HQN=..\src\*.cpp
 @set SRC_QUICKNES=..\quicknes\nes_emu\*.cpp ..\quicknes\fex\*.cpp
 
+@rem Check for missing libraries
+@if not exist ..\LuaJIT (
+    @echo "Folder LuaJIT not found."
+    @goto END
+)
+@if not exist ..\SDL2 (
+    @echo "Folder SDL2 not found."
+    @goto END
+)
+
 @if not defined DEBUG goto :COMPILE
 @set HQCOMPILE=%HQCOMPILE% /MDd /Zi /Od
 @set HQLINK=%HQLINK% /DEBUG
 
-@rem Compile quicknes
 :COMPILE
 MKDIR %OUTDIR%
+@rem Compile quicknes
 %HQCOMPILE% /I"..\quicknes" /wd4244 /wd4996 %SRC_QUICKNES%
-%HQCOMPILE% /I"..\quicknes" /I"..\LuaJIT\src" %SRC_HQN%
-%HQLINK% /out:%HQEXENAME% *.obj "..\LuaJIT\src\lua51.lib"
+@rem Compile HQN
+%HQCOMPILE% /I"..\quicknes" /I"..\LuaJIT\src" /I"..\SDL2\include" %SRC_HQN%
+%HQLINK% /out:%HQEXENAME% *.obj "..\LuaJIT\src\lua51.lib" "..\SDL2\lib\x86\SDL2.lib" "..\SDL2\lib\x86\SDL2main.lib"
 DEL *.obj
+:END

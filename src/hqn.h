@@ -7,6 +7,18 @@
 namespace hqn
 {
 
+typedef const char *error_t;
+
+class HQNState;
+
+class HQNListener
+{
+public:
+    virtual void onLoadROM(HQNState *state, const char *filename) = 0;
+    virtual void onAdvanceFrame(HQNState *state) = 0;
+    virtual void onLoadState(HQNState *state) = 0;
+};
+
 /*
 State which is maintained by the emulator driver.
 
@@ -18,12 +30,6 @@ class HQNState
 public:
     HQNState();
     ~HQNState();
-
-    /*
-    Call init() after loading a rom. Returns NULL if no errors
-    occured or a string message otherwise.
-    */
-    const char *init();
 
     /*
     The joypad data for the two joypads available to an NES.
@@ -39,33 +45,52 @@ public:
     Load a NES rom from the named file.
     Returns NULL or error string.
     */
-	blargg_err_t loadROM(const char *filename);
+	error_t loadROM(const char *filename);
 
     /*
-    Advance the emulator by one frame.
+    Advance the emulator by one frame. If sleep is true and there is a frame
+    limit set advanceFrame() will sleep in order to limit the framerate.
     Returns NULL or error string.
     */
-	blargg_err_t advanceFrame();
+	error_t advanceFrame(bool sleep=true);
 
     /*
     Save the game state. This can be restored at any time.
     */
-    blargg_err_t saveState(void *dest, size_t size, size_t *size_out);
+    error_t saveState(void *dest, size_t size, size_t *size_out);
 
     /*
     Get the size (bytes) of a savestate.
     Use this to allocate enough space for the saveState method.
     */
-    blargg_err_t saveStateSize(size_t *size) const;
+    error_t saveStateSize(size_t *size) const;
 
     /*
     Load the emulator state from data.
     This should be data produced by saveState().
     */
-    blargg_err_t loadState(const char *data, size_t size);
+    error_t loadState(const char *data, size_t size);
 
 
-	blargg_err_t setSampleRate(int rate);
+	error_t setSampleRate(int rate);
+
+    /**
+     * Set a limit to the framerate.
+     * 0 means no limit.
+     */
+    void setFramerate(int fps);
+
+    inline HQNListener *getListener() const
+    { return m_listener; }
+
+    inline void setListener(HQNListener *l)
+    { m_listener = l; }
+
+    /**
+     * Get the state of the keyboard. Use this to update the keyboard state.
+     */
+    inline uint8_t *getKeyboard()
+    { return m_keyboard; }
 
 private:
     void unloadRom();
@@ -75,6 +100,14 @@ private:
     /* ROM file stored in memory because reasons */
     uint8_t *m_romData;
     size_t m_romSize;
+    /* Minimum milliseconds between each frame. */
+    uint32_t m_msPerFrame;
+    /* time value of previous frame. */
+    uint32_t m_prevFrame;
+    /* The listener */
+    HQNListener *m_listener;
+    /* Keyboard state */
+    uint8_t m_keyboard[256];
 };
 
 /*
