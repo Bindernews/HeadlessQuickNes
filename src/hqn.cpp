@@ -139,6 +139,18 @@ void HQNState::setFramerate(int fps)
     else
     {
         m_msPerFrame = (long)(1000.0 / fps);
+    }   
+}
+
+int HQNState::getFramerate() const
+{
+    if (m_msPerFrame)
+    {
+        return (int)(1000.0 / m_msPerFrame);
+    }
+    else
+    {
+        return 0;
     }
     
 }

@@ -4,9 +4,12 @@
 #include "hqn.h"
 #include <SDL_video.h>
 #include <SDL_render.h>
+#include <SDL_pixles.h>
 
 namespace hqn
 {
+
+bool nameToColor(const char *color, SDL_Color *out);
 
 class GUIController : public HQNListener
 {

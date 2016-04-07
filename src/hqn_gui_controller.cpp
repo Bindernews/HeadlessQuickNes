@@ -1,5 +1,6 @@
 #include "hqn_gui_controller.h"
 #include "hqn_main.h"
+#include "hqn_util.h"
 #include <SDL.h>
 
 #define DEFAULT_WINDOW_TITLE "HappyQuickNES"
@@ -25,6 +26,61 @@ int32_t *_initF_VideoPalette()
 
 // Initialize the video palette
 const int32_t *VideoPalette = _initF_VideoPalette();
+
+// A map of color names to SDL_Color objects
+// In alphabetical order so we can do binary search
+struct {
+    const char *name;
+    SDL_Color color;
+} COLOR_MAP = {
+    // These are in alphabetical order so we can do a binary search
+    { "black", {0, 0, 0, 255} },
+    { "blue",  {0, 0, 255, 255} },
+    { "green", {0, 255, 0, 255} },
+    { "grey",  {50, 50, 50, 255} },
+    { "orange", {100, 65, 0, 255} },
+    { "pink", {100, 75, 80, 255} },
+    { "purple", { 138, 43, 226, 255} },
+    { "red", {255, 0, 0, 255} },
+    { "white", {255, 255, 255, 255} },
+    { "yellow", {255, 255, 0, 255} },
+};
+const int MAP_SIZE = 10;
+
+
+bool nameToColor(const char *name, SDL_Color *out)
+{
+    int min = 0;
+    int max = MAP_SIZE;
+    int colorPos = -1;
+    while (min <= max)
+    {
+        int med = (min + max) / 2;
+        int r = hqn_util::stricmp(target, COLOR_MAP[med].name);
+        if (r < 0)
+        {
+            max = med - 1;
+        }
+        else if (r > 0)
+        {
+            min = med + 1;
+        }
+        else // if (r == 0)
+        {
+            colorPos = med;
+            break;
+        }
+    }
+    if (colorPos == -1)
+    {
+        return false;
+    }
+    else
+    {
+        *out = COLOR_MAP[colorPos].color;
+        return true;
+    }
+}
 
 
 GUIController::GUIController(HQNState *state)

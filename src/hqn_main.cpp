@@ -41,6 +41,7 @@ int hqn_main(int argc, char **argv)
     GUIController *guiController = nullptr;
     lua_State *lstate = nullptr;
 	bool useGui = false;
+    int sdlInitFlags;
     
     // We take two arguments, the rom file and a lua script to run.
     if (argc < 3)
@@ -59,8 +60,8 @@ int hqn_main(int argc, char **argv)
 	/* Enable standard application logging */
 	SDL_LogSetPriority(SDL_LOG_CATEGORY_APPLICATION, SDL_LOG_PRIORITY_INFO);
 
-	int initFlags = useGui ? SDL_INIT_VIDEO : 0;
-    if (SDL_Init(initFlags) < 0) {
+	sdlInitFlags = useGui ? SDL_INIT_VIDEO : 0;
+    if (SDL_Init(sdlInitFlags) < 0) {
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Couldn't initialize SDL: %s\n", SDL_GetError());
         return 1;
 	}
@@ -79,6 +80,9 @@ int hqn_main(int argc, char **argv)
 		}
         hstate->setListener(guiController);
     }
+
+    // Now that most things are set up let's read the options
+    hstate->setFramerate(opts.getInt("framerate", 0));
 
 	// Load the ROM
 	err = hstate->loadROM(argv[1]);

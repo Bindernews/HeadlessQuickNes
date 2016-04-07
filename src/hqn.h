@@ -80,6 +80,11 @@ public:
      */
     void setFramerate(int fps);
 
+    /**
+     * Get the current framerate limit.
+     */
+    int getFramerate() const;
+
     inline HQNListener *getListener() const
     { return m_listener; }
 
