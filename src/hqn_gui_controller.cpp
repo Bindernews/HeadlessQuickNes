@@ -32,7 +32,7 @@ const int32_t *VideoPalette = _initF_VideoPalette();
 struct {
     const char *name;
     SDL_Color color;
-} COLOR_MAP = {
+} COLOR_MAP[] = {
     // These are in alphabetical order so we can do a binary search
     { "black", {0, 0, 0, 255} },
     { "blue",  {0, 0, 255, 255} },
@@ -56,7 +56,7 @@ bool nameToColor(const char *name, SDL_Color *out)
     while (min <= max)
     {
         int med = (min + max) / 2;
-        int r = hqn_util::stricmp(target, COLOR_MAP[med].name);
+        int r = hqn_util::stricmp(name, COLOR_MAP[med].name);
         if (r < 0)
         {
             max = med - 1;
