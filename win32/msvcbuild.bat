@@ -48,8 +48,7 @@ MKDIR %OUTDIR%
 
 rem Compile HQN
 %HQCOMPILE% /I"..\quicknes" /I"..\LuaJIT\src" /I"..\SDL2\include" %SRC_HQN%
-%HQLINK% /out:%HQEXENAME% *.obj "..\LuaJIT\src\lua51.lib" ^
-    "..\SDL2\lib\x86\SDL2.lib" "..\SDL2\lib\x86\SDL2main.lib" ^
-    "%LIB_QUICKNES%" opengl32.lib
+%HQLINK% /out:%HQEXENAME% /LIBPATH:"..\SDL2\lib\x86" *.obj "..\LuaJIT\src\lua51.lib" ^
+    SDL2.lib SDL2main.lib SDL2_ttf.lib "%LIB_QUICKNES%" opengl32.lib
 DEL *.obj
 :END

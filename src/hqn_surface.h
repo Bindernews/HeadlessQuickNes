@@ -42,8 +42,10 @@ public:
     Surface(size_t width, size_t height);
     ~Surface();
 
-    size_t getWidth() const;
-    size_t getHeight() const;
+    inline int getWidth() const
+    { return m_width; }
+    inline int getHeight() const
+    { return m_height; }
 
     void drawRect(int x, int y, size_t w, size_t h, Color color);
     void fillRect(int x, int y, size_t w, size_t h, Color fg, Color bg);
@@ -71,7 +73,7 @@ public:
 	 * Draw UTF8 text on the screen. Be warned that this is slow because it
 	 * has to render the text first.
 	 */
-	void drawText(int x, int y, const char *utf8text, Color fg, Color bg);
+	void drawText(int x, int y, const char *utf8text, Color fg);
 
     /**
      * Set all pixels in the surface to the given color.
@@ -136,6 +138,8 @@ private:
 
     inline int boundBottom(int y)
     { return std::min(y, (int)m_height - 1); }
+
+    static void *loadFont(const char *path, int pt);
 
 };
 

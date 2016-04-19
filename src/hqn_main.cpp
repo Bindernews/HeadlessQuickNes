@@ -3,6 +3,7 @@
 #include <cstdio>
 #include <csetjmp>
 #include <SDL.h>
+#include <SDL_ttf.h>
 #include "gl_include.h"
 #include "hqn.h"
 #include "hqn_lua.h"
@@ -63,23 +64,28 @@ int hqn_main(int argc, char **argv)
 	SDL_LogSetPriority(SDL_LOG_CATEGORY_APPLICATION, SDL_LOG_PRIORITY_INFO);
 
 	sdlInitFlags = useGui ? SDL_INIT_VIDEO : 0;
-    if (SDL_Init(sdlInitFlags) < 0) {
+    if (SDL_Init(sdlInitFlags) < 0)
+    {
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Couldn't initialize SDL: %s\n", SDL_GetError());
         return 1;
 	}
+    if (TTF_Init() < 0)
+    {
+        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Failed to initialize SDL_ttf: %s\n", TTF_GetError());
+        return 1;
+    }
 
     // Now we create our emulator state, allocated on the heap just because
     hstate = new HQNState();
     // Create the GUI if we have to
     if (useGui)
     {
-        // if we want to use a GUI but we can't load OpenGL then fail
-
         // Now try to create the gui controller
         guiController = new GUIController(hstate);
         // if we can't init
 		if (!guiController->init())
             goto init_fail;
+        // if we want to use a GUI but we can't load OpenGL then fail
         // Load the OpenGL extensions, etc.
         // if (ogl_LoadFunctions() == ogl_LOAD_FAILED)
         //     goto init_fail;
@@ -133,6 +139,7 @@ close_down:  // label for when we want to shut down
     if (hstate)
         delete hstate;
 
+    TTF_Quit();
     SDL_Quit();
 
     return exitval;

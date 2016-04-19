@@ -85,6 +85,22 @@ int gui_drawLine(lua_State *L)
     return 0;
 }
 
+int gui_drawText(lua_State *L)
+{
+    HQN_STATE(state);
+    CHECK_GUI(state, gui);
+    int x, y;
+    const char *text;
+    Color fg;
+
+    x = lua_tointeger(L, 1);
+    y = lua_tointeger(L, 2);
+    text = lua_tostring(L, 3);
+    fg = parseColor(L, 4, BLACK);
+    gui->getOverlay()->drawText(x, y, text, fg);
+    return 0;
+}
+
 int gui_clear(lua_State *L)
 {
     HQN_STATE(state);
@@ -94,13 +110,32 @@ int gui_clear(lua_State *L)
     return 0;
 }
 
+int gui_screenwidth(lua_State *L)
+{
+    HQN_STATE(state);
+    CHECK_GUI(state, gui);
+    lua_pushnumber(L, gui->getOverlay()->getWidth());
+    return 1;
+}
+
+int gui_screenheight(lua_State *L)
+{
+    HQN_STATE(state);
+    CHECK_GUI(state, gui);
+    lua_pushnumber(L, gui->getOverlay()->getHeight());
+    return 1;
+}
+
 int gui_init_(lua_State *L)
 {
     luaL_Reg funcReg[] = {
             { "drawRectangle", &gui_drawRectangle },
             { "drawBox",  &gui_drawBox },
             { "drawLine", &gui_drawLine },
+            { "drawText", &gui_drawText },
             { "clear",    &gui_clear },
+            { "screenwidth",   &gui_screenwidth },
+            { "screenheight",  &gui_screenheight },
             { nullptr, nullptr }
     };
     luaL_register(L, "gui", funcReg);

@@ -2,7 +2,8 @@
 TARGET = ../hqnes
 LIB_QUICKNES = ../quicknes/libquicknes.a
 LIB_LUAJIT = ../LuaJIT/src/libluajit.so
-LINKFLAGS = -L ../quicknes/ -L ../LuaJIT/src -lSDL2 -lquicknes -lluajit -ldl
+# Link flags might be broken because I can't test them right now
+LINKFLAGS = -L ../quicknes/ -L ../LuaJIT/src -lSDL2 -lSDL2_ttf -lquicknes -lluajit -ldl -lgl
 CXXFLAGS = -std=c++11 -I ../quicknes -I ../LuaJIT/src -O3 -Wno-multichar -fno-exceptions -fpermissive
 
 SOURCES = \
@@ -11,11 +12,14 @@ SOURCES = \
 	../src/hqn_util.cpp \
 	../src/hqn_lua.cpp \
 	../src/hqn_lua_emu.cpp \
+	../src/hqn_lua_gui.cpp \
 	../src/hqn_lua_joypad.cpp \
 	../src/hqn_lua_mainmemory.cpp \
 	../src/hqn_lua_savestate.cpp \
 	../src/hqn_gui_controller.cpp \
-	../src/options.cpp
+	../src/hqn_surface.cpp \
+	../src/options.cpp \
+	../src/gl_include.c
 
 OBJECTS = $(SOURCES:.cpp=.o)
 

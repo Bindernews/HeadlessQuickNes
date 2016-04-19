@@ -1,18 +1,37 @@
-#include "hqn_surface.h"
+#include <string>
+#include <map>
 #include <cstring>
 #include <cmath>
+#include <SDL_ttf.h>
+#include <SDL_platform.h>
+#include "hqn_surface.h"
 
 namespace hqn
 {
 
+#ifdef __WIN32__
+#define DEFAULT_FONT "C:/Windows/Fonts/cour.ttf" // Courier New
+#elif defined(__LINUX__) || defined(__OPENBSD__) || defined(__NETBSD__)
+#define DEFAULT_FONT "/usr/share/fonts/truetype/freefont/FreeMono.ttf"
+#else
+#error Failed to determine default font path for platform
+#endif
+#define DEFAULT_FONT_SIZE 12
+
 // const float pi = 3.14159265359;
 const float pi = 3.14159265359f;
 
-// Color masks for building the SDL_Surface
+// Color masks for building the SDL_Surface.
+// They're constant because why not?
 const Color MASK_R { 0xff, 0, 0, 0 };
 const Color MASK_G { 0, 0xff, 0, 0 };
 const Color MASK_B { 0, 0, 0xff, 0 };
 const Color MASK_A { 0, 0, 0, 0xff };
+
+// Store all the loaded fonts here. The font names are in the format
+// filepath-ptsize. Once loaded, a font never gets unloaded. Yay.
+static std::map<std::string, TTF_Font*> fontMap;
+
 
 // Copied from http://forum.devmaster.net/t/fast-and-accurate-sine-cosine/9648
 float fastSin(float x)
@@ -53,6 +72,8 @@ Surface::Surface(size_t w, size_t h)
 
 Surface::~Surface()
 {
+    SDL_FreeSurface(m_surface);
+    m_surface = nullptr;
     delete[] m_pixels;
 }
 
@@ -210,6 +231,24 @@ void Surface::safeLine(int x1, int y1, int x2, int y2, Color color)
     }
 }
 
+void Surface::drawText(int x, int y, const char *text, Color fg)
+{
+    SDL_Surface *surfsUp;
+    SDL_Rect dest;
+    TTF_Font *font;
+    SDL_Color color;
+
+    dest.x = x;
+    dest.y = y;
+    color = { fg.r, fg.g, fg.b, fg.a };
+
+    font = (TTF_Font*)loadFont(DEFAULT_FONT, DEFAULT_FONT_SIZE);
+    TTF_SizeUTF8(font, text, &dest.w, &dest.h);
+    surfsUp = TTF_RenderUTF8_Solid(font, text, color);
+    SDL_BlitSurface(surfsUp, nullptr, m_surface, &dest);
+    SDL_FreeSurface(surfsUp);
+}
+
 void Surface::setPixel(int x, int y, Color color)
 {
     if (x < 0 || y < 0 || x >= (int)m_width || y >= (int)m_height)
@@ -219,6 +258,23 @@ void Surface::setPixel(int x, int y, Color color)
     else
     {
         rawset(x, y, color);
+    }
+}
+
+void *Surface::loadFont(const char *path, int ptsize)
+{
+    std::string fontName = std::string(path) + "-"
+            + std::to_string(ptsize);
+    auto search = fontMap.find(fontName);
+    if (search != fontMap.end())
+    {
+        return search->second;
+    }
+    else
+    {
+        TTF_Font *font = TTF_OpenFont(path, ptsize);
+        fontMap[fontName] = font;
+        return font;
     }
 }
 
