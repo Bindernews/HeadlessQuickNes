@@ -3,6 +3,7 @@
 #include <cstdio>
 #include <csetjmp>
 #include <SDL.h>
+#include "gl_include.h"
 #include "hqn.h"
 #include "hqn_lua.h"
 #include "options.h"
@@ -42,6 +43,7 @@ int hqn_main(int argc, char **argv)
     lua_State *lstate = nullptr;
 	bool useGui = false;
     int sdlInitFlags;
+    int exitval = 0;
     
     // We take two arguments, the rom file and a lua script to run.
     if (argc < 3)
@@ -71,13 +73,19 @@ int hqn_main(int argc, char **argv)
     // Create the GUI if we have to
     if (useGui)
     {
+        // if we want to use a GUI but we can't load OpenGL then fail
+
+        // Now try to create the gui controller
         guiController = new GUIController(hstate);
-		if (!guiController->init(256, 240))
-		{
-			delete hstate;
-			delete guiController;
-			return 1;
-		}
+        // if we can't init
+		if (!guiController->init())
+            goto init_fail;
+        // Load the OpenGL extensions, etc.
+        // if (ogl_LoadFunctions() == ogl_LOAD_FAILED)
+        //     goto init_fail;
+        // if (ogl_ext_ARB_framebuffer_object != ogl_LOAD_FAILED)
+        //     goto init_fail;
+        // The guiController needs to listen to events from HQNState
         hstate->setListener(guiController);
     }
 
@@ -89,9 +97,7 @@ int hqn_main(int argc, char **argv)
 	if (err)
 	{
 		fprintf(stderr, "Failed to load rom %s: %s\n", argv[1], err);
-		// cleanup
-		delete hstate;
-		return 1;
+        goto init_fail;
 	}
 
     // And set up our lua state
@@ -109,16 +115,27 @@ int hqn_main(int argc, char **argv)
         }
     }
 
-    // Always delete for good measure
+    goto close_down;
+
+init_fail:   // label for if initializing fails
+    // set the exit value because we failed
+    exitval = 1;
+
+close_down:  // label for when we want to shut down
+    // Safely delete everything
+    if (lstate)
+        lua_close(lstate);
     if (guiController)
     {
         hstate->setListener(nullptr);
         delete guiController;
     }
-    lua_close(lstate);
-    delete hstate;
+    if (hstate)
+        delete hstate;
 
-    return 0;
+    SDL_Quit();
+
+    return exitval;
 }
 
 

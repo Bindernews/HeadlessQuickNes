@@ -1,6 +1,7 @@
 LuaJIT/
 SDL2/
 bin/
+build/
 *.o
 *.obj
 *.a

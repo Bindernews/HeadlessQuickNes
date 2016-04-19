@@ -3,6 +3,7 @@
 
 #include <cstdint>
 #include <algorithm>
+#include <SDL_surface.h>
 
 namespace hqn
 {
@@ -14,7 +15,11 @@ float fastCos(float x);
 
 struct Color
 {
-    uint8_t r, g, b, a;
+	union
+	{
+		struct { uint8_t r, g, b, a; };
+		uint32_t bits;
+	};
 };
 
 enum BlendMode
@@ -62,6 +67,17 @@ public:
      */
     void safeLine(int x1, int y1, int x2, int y2, Color color);
 
+	/**
+	 * Draw UTF8 text on the screen. Be warned that this is slow because it
+	 * has to render the text first.
+	 */
+	void drawText(int x, int y, const char *utf8text, Color fg, Color bg);
+
+    /**
+     * Set all pixels in the surface to the given color.
+     */
+    void clear(Color color);
+
     void setPixel(int x, int y, Color color);
     int32_t getPixel(int x, int y);
 
@@ -70,6 +86,9 @@ public:
      */
     inline Color *getPixels() const
     { return m_pixels; }
+
+    inline size_t getDataSize() const
+    { return m_width * m_height * 4; }
 
     void setBlendMode(BlendMode mode);
     BlendMode getBlendMode() const;
@@ -82,6 +101,7 @@ private:
 
     // RGBA formatted pixels
     Color *m_pixels;
+	SDL_Surface *m_surface;
     int m_width;
     int m_height;
     BlendMode m_blend;

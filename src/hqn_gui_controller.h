@@ -2,6 +2,7 @@
 #define __HQN_GUI_CONTROLLER__
 
 #include "hqn.h"
+#include "hqn_surface.h"
 #include <SDL_video.h>
 #include <SDL_render.h>
 #include <SDL_pixels.h>
@@ -22,7 +23,7 @@ public:
      * creating the controller. Returns true if all went well,
      * false if an error occured.
      */
-    bool init(size_t width, size_t height);
+    bool init();
 
     /** Set the window title. */
     void setTitle(const char *title);
@@ -40,6 +41,13 @@ public:
 
     /** Get the pointer to the window. Use this to change settings. */
     SDL_Window *ptr();
+
+    /**
+     * Reference to the drawing surface. Use this to draw things on
+     * top of the NES display.
+     */
+    inline Surface *getOverlay()
+    { return m_overlay; }
 
     // Methods overriden from superclass.
     virtual void onLoadROM(HQNState *state, const char *filename);
@@ -66,8 +74,12 @@ private:
     int32_t m_pixels[256 * 240];
     // SDL Textures
     SDL_Texture *m_tex;
+    // Overlay texture
+    SDL_Texture *m_texOverlay;
     // Destination rect for the texture
     SDL_Rect m_texDest;
+    // Overlay surface which will be drawn on top of the NES display
+    Surface *m_overlay;
     // Should the emulator quit
     bool m_quit;
 };

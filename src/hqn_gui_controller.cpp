@@ -95,14 +95,20 @@ GUIController::~GUIController()
 {
     if (m_tex)
         SDL_DestroyTexture(m_tex);
+    if (m_texOverlay)
+        SDL_DestroyTexture(m_texOverlay);
     if (m_renderer)
         SDL_DestroyRenderer(m_renderer);
     if (m_window)
         SDL_DestroyWindow(m_window);
+
 }
 
-bool GUIController::init(size_t width, size_t height)
+bool GUIController::init()
 {
+    const size_t width = 256,
+                 height = 240;
+
     // create the window
     if (!(m_window = SDL_CreateWindow(DEFAULT_WINDOW_TITLE,
         SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, width, height, 0)))
@@ -112,25 +118,39 @@ bool GUIController::init(size_t width, size_t height)
     if (!(m_tex = SDL_CreateTexture(m_renderer, SDL_PIXELFORMAT_ARGB8888,
         SDL_TEXTUREACCESS_STREAMING, 256, 256)))
         return false;
+    if (!(m_texOverlay = SDL_CreateTexture(m_renderer, SDL_PIXELFORMAT_ARGB8888,
+        SDL_TEXTUREACCESS_STREAMING, 256, 256)))
+        return false;
 
+    SDL_SetTextureBlendMode(m_texOverlay, SDL_BLENDMODE_BLEND);
     // Set the clear color now rather than later
     SDL_SetRenderDrawColor(m_renderer, 0, 0, 0, 255);
+    m_overlay = new Surface(width, height);
 
     return true;
 }
 
 void GUIController::onAdvanceFrame(HQNState *state)
 {
-    void *pixels = nullptr;
+    void *nesPixels = nullptr;
+    void *overlayPixels = nullptr;
     int pitch = 0;
-    // update texture
-	if (SDL_LockTexture(m_tex, nullptr, &pixels, &pitch) < 0)
+    // lock both textures
+	if (SDL_LockTexture(m_tex, nullptr, &nesPixels, &pitch) < 0)
 		return;
-    blit(state->emu(), (int32_t*)pixels, VideoPalette, 0, 0, 0, 0);
+    if (SDL_LockTexture(m_texOverlay, nullptr, &overlayPixels, &pitch) < 0)
+        return;
+    // update them
+    blit(state->emu(), (int32_t*)nesPixels, VideoPalette, 0, 0, 0, 0);
+    memcpy(overlayPixels, m_overlay->getPixels(), m_overlay->getDataSize());
+    // unlock the textures
     SDL_UnlockTexture(m_tex);
+    SDL_UnlockTexture(m_texOverlay);
+
     // render to screen
     SDL_RenderClear(m_renderer);
     SDL_RenderCopy(m_renderer, m_tex, &NES_BLIT_RECT, &NES_BLIT_RECT);
+    SDL_RenderCopy(m_renderer, m_texOverlay, &NES_BLIT_RECT, &NES_BLIT_RECT);
     SDL_RenderPresent(m_renderer);
     // Process any outstanding events
     processEvents();

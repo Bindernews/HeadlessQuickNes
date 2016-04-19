@@ -8,6 +8,12 @@ namespace hqn
 // const float pi = 3.14159265359;
 const float pi = 3.14159265359f;
 
+// Color masks for building the SDL_Surface
+const Color MASK_R { 0xff, 0, 0, 0 };
+const Color MASK_G { 0, 0xff, 0, 0 };
+const Color MASK_B { 0, 0, 0xff, 0 };
+const Color MASK_A { 0, 0, 0, 0xff };
+
 // Copied from http://forum.devmaster.net/t/fast-and-accurate-sine-cosine/9648
 float fastSin(float x)
 {
@@ -37,6 +43,12 @@ Surface::Surface(size_t w, size_t h)
     m_width = (int)w;
     m_height = (int)h;
     setBlendMode(HQN_BLENDMODE_BLEND);
+
+    // Create an SDL Surface we can blit to
+	m_surface = SDL_CreateRGBSurfaceFrom(m_pixels, w, h, 32, w * sizeof(Color),
+        MASK_R.bits, MASK_G.bits, MASK_B.bits, MASK_A.bits);
+    // try to dereference it and crash if it fails
+    *m_surface;
 }
 
 Surface::~Surface()
@@ -133,6 +145,14 @@ void Surface::fastLine(int x1, int y1, int x2, int y2, Color color)
                 error -= 1.0f;
             }
         }
+    }
+}
+
+void Surface::clear(Color color) {
+    int dataSize = m_width * m_height;
+    for (int i = 0; i < dataSize; i++)
+    {
+        m_pixels[i] = color;
     }
 }
 
@@ -238,7 +258,7 @@ Color Surface::blendBlend(Color src, Color dst)
     dst.r = BYTE(src.r * src.a + dst.r * invA);
     dst.g = BYTE(src.g * src.a + dst.g * invA);
     dst.b = BYTE(src.b * src.a + dst.b * invA);
-    dst.a = BYTE(src.a + (dst.a * invA));
+    dst.a = (uint8_t)(src.a + (dst.a * invA));
     return dst;
 }
 

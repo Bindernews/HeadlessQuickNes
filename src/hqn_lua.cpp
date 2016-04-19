@@ -7,6 +7,7 @@ namespace hqn_lua
 {
 	/* Delcarations for all the init functions. */
 	int emu_init_(lua_State *L);
+    int gui_init_(lua_State *L);
 	int joypad_init_(lua_State *L);
 	int mainmemory_init_(lua_State *L);
     int savestate_init_(lua_State *L);
@@ -17,6 +18,7 @@ void init_nes(lua_State *L, HQNState *state)
     lua_setfield(L, LUA_GLOBALSINDEX, HQN_STATE_REF);
 
 	emu_init_(L);
+    gui_init_(L);
 	joypad_init_(L);
 	mainmemory_init_(L);
     savestate_init_(L);
