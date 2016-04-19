@@ -10,6 +10,8 @@
 namespace hqn
 {
 
+    extern const char *DEFAULT_WINDOW_TITLE;
+
 class GUIController : public HQNListener
 {
 public:
@@ -21,7 +23,9 @@ public:
      */
     static GUIController *create(HQNState &state);
 
-    /** Set the window title. */
+    /**
+     * Set the window title.
+     */
     void setTitle(const char *title);
 
     /** Set the size of the window. */

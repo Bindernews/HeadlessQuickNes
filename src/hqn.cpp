@@ -1,4 +1,4 @@
-
+#include <cmath>
 #include <SDL_timer.h>
 #include "hqn.h"
 #include "hqn_util.h"
@@ -36,6 +36,7 @@ HQNState::HQNState()
 
     m_prevFrame = 0;
     m_msPerFrame = 0;
+    m_initialFrame = SDL_GetTicks();
 }
 
 // Destructor
@@ -118,6 +119,7 @@ void HQNState::unloadRom()
 error_t HQNState::advanceFrame(bool sleep)
 {
     Uint32 ticks = SDL_GetTicks();
+    m_frameTime = ticks - m_prevFrame;
     Uint32 wantTicks = m_prevFrame + m_msPerFrame;
     if (wantTicks > ticks)
     {
@@ -152,7 +154,15 @@ int HQNState::getFramerate() const
     {
         return 0;
     }
-    
+}
+
+double HQNState::getFPS() const
+{
+    double ft = m_frameTime ? m_frameTime : 1;
+    double fps = 1000.0 / ft;
+    // round to 2 decimal places
+    fps = std::floor(fps * 100) / 100;
+    return fps;
 }
 
 } // end namespace hqn

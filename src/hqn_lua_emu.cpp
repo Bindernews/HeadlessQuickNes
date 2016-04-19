@@ -26,12 +26,20 @@ namespace hqn_lua
 		return 1;
 	}
 
+	int emu_getfps(lua_State *L)
+	{
+		HQN_STATE(state);
+		lua_pushnumber(L, state->getFPS());
+		return 1;
+	}
+
 	int emu_init_(lua_State *L)
 	{
 		luaL_Reg funcReg[] = {
 				{ "frameadvance", &emu_frameadvance },
 				{ "setframerate", &emu_setframerate },
 				{ "getframerate", &emu_getframerate },
+				{ "getfps",       &emu_getfps },
 				{ nullptr, nullptr }
 		};
 		luaL_register(L, "emu", funcReg);

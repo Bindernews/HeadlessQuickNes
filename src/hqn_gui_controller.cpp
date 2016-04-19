@@ -3,12 +3,13 @@
 #include "hqn_util.h"
 #include <SDL.h>
 
-#define DEFAULT_WINDOW_TITLE "HeadlessQuickNES"
 #define DEFAULT_WIDTH 256
 #define DEFAULT_HEIGHT 240
 
 namespace hqn
 {
+
+const char *DEFAULT_WINDOW_TITLE = "HeadlessQuickNES";
 
 const SDL_Rect NES_BLIT_RECT = {0, 0, 256, 240};
 
@@ -167,6 +168,11 @@ void GUIController::blit(Nes_Emu *e, int32_t *dest, const int32_t *colors, int c
             *dest++ = colors[lut[src[i]]];
         }
     }
+}
+
+void GUIController::setTitle(const char *title)
+{
+    SDL_SetWindowTitle(m_window, title);
 }
 
 void GUIController::processEvents()

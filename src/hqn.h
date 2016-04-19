@@ -85,6 +85,11 @@ public:
      */
     int getFramerate() const;
 
+    /**
+     * Get the calculated frames per second.
+     */
+    double getFPS() const;
+
     inline HQNListener *getListener() const
     { return m_listener; }
 
@@ -113,6 +118,11 @@ private:
     HQNListener *m_listener;
     /* Keyboard state */
     uint8_t m_keyboard[256];
+    /* Number of frames we've processed */
+    uint32_t m_frames;
+    /* How long it took to process the previous frame */
+    uint32_t m_frameTime;
+    uint32_t m_initialFrame;
 };
 
 /*

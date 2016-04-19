@@ -147,6 +147,18 @@ int gui_getscale(lua_State *L)
 	return 1;
 }
 
+int gui_settitle(lua_State *L)
+{
+    HQN_STATE(state);
+    CHECK_GUI(state, gui);
+
+    const char *title = lua_tostring(L, 1);
+    if (!title)
+        title = hqn::DEFAULT_WINDOW_TITLE;
+    gui->setTitle(title);
+    return 0;
+}
+
 int gui_init_(lua_State *L)
 {
     luaL_Reg funcReg[] = {
@@ -159,6 +171,7 @@ int gui_init_(lua_State *L)
             { "screenheight",  &gui_screenheight },
 			{ "setscale", &gui_setscale },
 			{ "getscale", &gui_getscale },
+            { "settitle", &gui_settitle },
             { nullptr, nullptr }
     };
     luaL_register(L, "gui", funcReg);
