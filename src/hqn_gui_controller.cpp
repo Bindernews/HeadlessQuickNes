@@ -3,7 +3,9 @@
 #include "hqn_util.h"
 #include <SDL.h>
 
-#define DEFAULT_WINDOW_TITLE "HappyQuickNES"
+#define DEFAULT_WINDOW_TITLE "HeadlessQuickNES"
+#define DEFAULT_WIDTH 256
+#define DEFAULT_HEIGHT 240
 
 namespace hqn
 {
@@ -28,12 +30,14 @@ int32_t *_initF_VideoPalette()
 const int32_t *VideoPalette = _initF_VideoPalette();
 
 
-GUIController::GUIController(HQNState *state)
+GUIController::GUIController(HQNState &state)
+:m_state(state)
 {
     m_tex = nullptr;
+    m_texOverlay = nullptr;
     m_renderer = nullptr;
     m_window = nullptr;
-    m_state = state;
+    m_overlay = nullptr;
 }
 
 GUIController::~GUIController()
@@ -48,31 +52,70 @@ GUIController::~GUIController()
         SDL_DestroyWindow(m_window);
 }
 
+GUIController *GUIController::create(HQNState &state)
+{
+    GUIController *self = new GUIController(state);
+    if (!self->init())
+    {
+        delete self;
+        return nullptr;
+    }
+    else
+    {
+        return self;
+    }
+}
+
 bool GUIController::init()
 {
-    const size_t width = 256,
-                 height = 240;
-
     // create the window
     if (!(m_window = SDL_CreateWindow(DEFAULT_WINDOW_TITLE,
-        SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, width, height, 0)))
+        SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, DEFAULT_WIDTH,
+        DEFAULT_HEIGHT, 0)))
         return false;
     if (!(m_renderer = SDL_CreateRenderer(m_window, -1, SDL_RENDERER_ACCELERATED)))
         return false;
     if (!(m_tex = SDL_CreateTexture(m_renderer, SDL_PIXELFORMAT_ARGB8888,
         SDL_TEXTUREACCESS_STREAMING, 256, 256)))
         return false;
-    if (!(m_texOverlay = SDL_CreateTexture(m_renderer, SDL_PIXELFORMAT_ARGB8888,
-        SDL_TEXTUREACCESS_STREAMING, 256, 256)))
-        return false;
-
-    SDL_SetTextureBlendMode(m_texOverlay, SDL_BLENDMODE_BLEND);
     // Set the clear color now rather than later
     SDL_SetRenderDrawColor(m_renderer, 0, 0, 0, 255);
-    m_overlay = new Surface(width, height);
-
+    // Default the scale to 1
+    if (!setScale(1))
+        return false;
     return true;
 }
+
+bool GUIController::setScale(int scale)
+{
+    if (scale < 1 || scale > 5)
+        return false;
+    int winW = DEFAULT_WIDTH * scale;
+    int winH = DEFAULT_HEIGHT * scale;
+
+    // Change the window size
+    SDL_SetWindowSize(m_window, winW, winH);
+    
+    // Destroy windows-sized things
+    if (m_overlay)
+        delete m_overlay;
+    if (m_texOverlay)
+        SDL_DestroyTexture(m_texOverlay);
+    // Now re-create them
+    m_overlay = new Surface(winW, winH);
+    if (!(m_texOverlay = SDL_CreateTexture(m_renderer, SDL_PIXELFORMAT_ARGB8888,
+        SDL_TEXTUREACCESS_STREAMING, winW, winW)))
+        return false;
+    SDL_SetTextureBlendMode(m_texOverlay, SDL_BLENDMODE_BLEND);
+    m_texDest = { 0, 0, winW, winH };
+
+    // Update internal scale variable
+    m_scale = scale;
+    return true;
+}
+
+int GUIController::getScale() const
+{ return m_scale; }
 
 void GUIController::onAdvanceFrame(HQNState *state)
 {
@@ -93,8 +136,8 @@ void GUIController::onAdvanceFrame(HQNState *state)
 
     // render to screen
     SDL_RenderClear(m_renderer);
-    SDL_RenderCopy(m_renderer, m_tex, &NES_BLIT_RECT, &NES_BLIT_RECT);
-    SDL_RenderCopy(m_renderer, m_texOverlay, &NES_BLIT_RECT, &NES_BLIT_RECT);
+    SDL_RenderCopy(m_renderer, m_tex, &NES_BLIT_RECT, nullptr);
+    SDL_RenderCopy(m_renderer, m_texOverlay, &m_texDest, &m_texDest);
     SDL_RenderPresent(m_renderer);
     // Process any outstanding events
     processEvents();

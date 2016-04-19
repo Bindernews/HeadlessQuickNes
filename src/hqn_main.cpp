@@ -81,9 +81,7 @@ int hqn_main(int argc, char **argv)
     if (useGui)
     {
         // Now try to create the gui controller
-        guiController = new GUIController(hstate);
-        // if we can't init
-		if (!guiController->init())
+        if (!(guiController = GUIController::create(*hstate)))
             goto init_fail;
         // if we want to use a GUI but we can't load OpenGL then fail
         // Load the OpenGL extensions, etc.

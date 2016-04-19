@@ -45,7 +45,7 @@ int gui_drawRectangle(lua_State *L)
     fgColor = parseColor(L, 5, BLACK);
     bgColor = parseColor(L, 6, TRANSPARENT);
     // draw to buffer
-    gui->getOverlay()->fillRect(x, y, w, h, fgColor, bgColor);
+    gui->getOverlay().fillRect(x, y, w, h, fgColor, bgColor);
     return 0;
 }
 
@@ -65,7 +65,7 @@ int gui_drawBox(lua_State *L)
     fgColor = parseColor(L, 5, BLACK);
     bgColor = parseColor(L, 6, TRANSPARENT);
     // draw to buffer
-    gui->getOverlay()->fillRect(x, y, x + w, y + h, fgColor, bgColor);
+    gui->getOverlay().fillRect(x, y, x + w, y + h, fgColor, bgColor);
     return 0;
 }
 
@@ -81,7 +81,7 @@ int gui_drawLine(lua_State *L)
     x2 = lua_tointeger(L, 3);
     y2 = lua_tointeger(L, 4);
     fgColor = parseColor(L, 5, BLACK);
-    gui->getOverlay()->fastLine(x1, y1, x2, y2, fgColor);
+    gui->getOverlay().fastLine(x1, y1, x2, y2, fgColor);
     return 0;
 }
 
@@ -97,7 +97,7 @@ int gui_drawText(lua_State *L)
     y = lua_tointeger(L, 2);
     text = lua_tostring(L, 3);
     fg = parseColor(L, 4, BLACK);
-    gui->getOverlay()->drawText(x, y, text, fg);
+    gui->getOverlay().drawText(x, y, text, fg);
     return 0;
 }
 
@@ -106,7 +106,7 @@ int gui_clear(lua_State *L)
     HQN_STATE(state);
     CHECK_GUI(state, gui);
     Color clearColor = parseColor(L, 1, TRANSPARENT);
-    gui->getOverlay()->clear(clearColor);
+    gui->getOverlay().clear(clearColor);
     return 0;
 }
 
@@ -114,7 +114,7 @@ int gui_screenwidth(lua_State *L)
 {
     HQN_STATE(state);
     CHECK_GUI(state, gui);
-    lua_pushnumber(L, gui->getOverlay()->getWidth());
+    lua_pushnumber(L, gui->getOverlay().getWidth());
     return 1;
 }
 
@@ -122,8 +122,29 @@ int gui_screenheight(lua_State *L)
 {
     HQN_STATE(state);
     CHECK_GUI(state, gui);
-    lua_pushnumber(L, gui->getOverlay()->getHeight());
+    lua_pushnumber(L, gui->getOverlay().getHeight());
     return 1;
+}
+
+int gui_setscale(lua_State *L)
+{
+	HQN_STATE(state);
+	CHECK_GUI(state, gui);
+	int scale = 1;
+	if (!lua_isnil(L, 1))
+	{
+		scale = lua_tointeger(L, 1);
+	}
+	lua_pushboolean(L, gui->setScale(scale));
+	return 1;
+}
+
+int gui_getscale(lua_State *L)
+{
+	HQN_STATE(state);
+	CHECK_GUI(state, gui);
+	lua_pushnumber(L, gui->getScale());
+	return 1;
 }
 
 int gui_init_(lua_State *L)
@@ -136,6 +157,8 @@ int gui_init_(lua_State *L)
             { "clear",    &gui_clear },
             { "screenwidth",   &gui_screenwidth },
             { "screenheight",  &gui_screenheight },
+			{ "setscale", &gui_setscale },
+			{ "getscale", &gui_getscale },
             { nullptr, nullptr }
     };
     luaL_register(L, "gui", funcReg);

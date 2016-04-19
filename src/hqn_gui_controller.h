@@ -10,20 +10,16 @@
 namespace hqn
 {
 
-bool nameToColor(const char *color, SDL_Color *out);
-
 class GUIController : public HQNListener
 {
 public:
-    GUIController(HQNState *state);
-    ~GUIController();
+    virtual ~GUIController();
 
     /**
-     * Initialize the GUI controller. Call this right after
-     * creating the controller. Returns true if all went well,
-     * false if an error occured.
+     * Create a new GUI controller. Returns a GUI Controller or nullptr
+     * if an error occured during initialization.
      */
-    bool init();
+    static GUIController *create(HQNState &state);
 
     /** Set the window title. */
     void setTitle(const char *title);
@@ -42,17 +38,29 @@ public:
     /** Get the pointer to the window. Use this to change settings. */
     SDL_Window *ptr();
 
+    bool setScale(int scale);
+
+    int getScale() const;
+
     /**
      * Reference to the drawing surface. Use this to draw things on
      * top of the NES display.
      */
-    inline Surface *getOverlay()
-    { return m_overlay; }
+    inline Surface &getOverlay()
+    { return *m_overlay; }
 
     // Methods overriden from superclass.
     virtual void onLoadROM(HQNState *state, const char *filename);
     virtual void onAdvanceFrame(HQNState *state);
     virtual void onLoadState(HQNState *state);
+
+protected:
+    GUIController(HQNState &state);
+
+    /**
+     * Called in create(). If this fails the GUI cannot be created.
+     */
+    bool init();
 
 private:
     /**
@@ -65,7 +73,7 @@ private:
     void blit(Nes_Emu *e, int32_t *dest, const int32_t *colors, int cropleft, int croptop, int cropright, int cropbottom);
 
     // Pointer to the state we're listening to
-    HQNState *m_state;
+    HQNState &m_state;
     // Window pointer
     SDL_Window *m_window;
     // Renderer
@@ -80,6 +88,8 @@ private:
     SDL_Rect m_texDest;
     // Overlay surface which will be drawn on top of the NES display
     Surface *m_overlay;
+    // Current scale. Can be 1, 2, 3, 4, 5
+    int m_scale;
     // Should the emulator quit
     bool m_quit;
 };
