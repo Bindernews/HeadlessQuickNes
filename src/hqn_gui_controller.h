@@ -42,9 +42,22 @@ public:
     /** Get the pointer to the window. Use this to change settings. */
     SDL_Window *ptr();
 
+    /**
+     * Set the gui scale. Can be 1 - 5.
+     * Returns true if it succeeds, false otherwise.
+     */
     bool setScale(int scale);
 
     int getScale() const;
+
+    /**
+     * Redraw the screen and process window events without updating the
+     * emulator. This can be used when drawing on the overlay.
+     *
+     * @param readNES should update() also redraw the nes screen (true) or
+     *        trust that it didn't change (false).
+     */
+    void update(bool readNES);
 
     /**
      * Reference to the drawing surface. Use this to draw things on

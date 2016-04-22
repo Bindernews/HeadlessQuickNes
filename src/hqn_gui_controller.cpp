@@ -118,23 +118,26 @@ bool GUIController::setScale(int scale)
 int GUIController::getScale() const
 { return m_scale; }
 
-void GUIController::onAdvanceFrame(HQNState *state)
+void GUIController::update(bool readNES)
 {
     void *nesPixels = nullptr;
     void *overlayPixels = nullptr;
     int pitch = 0;
-    // lock both textures
-	if (SDL_LockTexture(m_tex, nullptr, &nesPixels, &pitch) < 0)
-		return;
+    // Update the overlay
     if (SDL_LockTexture(m_texOverlay, nullptr, &overlayPixels, &pitch) < 0)
         return;
-    // update them
-    blit(state->emu(), (int32_t*)nesPixels, VideoPalette, 0, 0, 0, 0);
     memcpy(overlayPixels, m_overlay->getPixels(), m_overlay->getDataSize());
-    // unlock the textures
-    SDL_UnlockTexture(m_tex);
     SDL_UnlockTexture(m_texOverlay);
 
+    // Only update the NES image if we have to
+    if (readNES)
+    {
+        if (SDL_LockTexture(m_tex, nullptr, &nesPixels, &pitch) < 0)
+            return;
+        blit(m_state.emu(), (int32_t*)nesPixels, VideoPalette, 0, 0, 0, 0);
+        SDL_UnlockTexture(m_tex);
+    }
+    
     // render to screen
     SDL_RenderClear(m_renderer);
     SDL_RenderCopy(m_renderer, m_tex, &NES_BLIT_RECT, nullptr);
@@ -142,6 +145,11 @@ void GUIController::onAdvanceFrame(HQNState *state)
     SDL_RenderPresent(m_renderer);
     // Process any outstanding events
     processEvents();
+}
+
+void GUIController::onAdvanceFrame(HQNState *state)
+{
+    update(true);
 }
 
 // Copied directly from bizinterface.cpp in BizHawk/quicknes

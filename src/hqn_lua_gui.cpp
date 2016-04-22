@@ -159,19 +159,28 @@ int gui_settitle(lua_State *L)
     return 0;
 }
 
+int gui_update(lua_State *L)
+{
+    HQN_STATE(state);
+    CHECK_GUI(state, gui);
+    gui->update(false);
+    return 0;
+}
+
 int gui_init_(lua_State *L)
 {
     luaL_Reg funcReg[] = {
             { "drawRectangle", &gui_drawRectangle },
-            { "drawBox",  &gui_drawBox },
-            { "drawLine", &gui_drawLine },
-            { "drawText", &gui_drawText },
-            { "clear",    &gui_clear },
+            { "drawBox",   &gui_drawBox },
+            { "drawLine",  &gui_drawLine },
+            { "drawText",  &gui_drawText },
+            { "clear",     &gui_clear },
             { "screenwidth",   &gui_screenwidth },
             { "screenheight",  &gui_screenheight },
-			{ "setscale", &gui_setscale },
-			{ "getscale", &gui_getscale },
-            { "settitle", &gui_settitle },
+			{ "setscale",      &gui_setscale },
+			{ "getscale",      &gui_getscale },
+            { "settitle",   &gui_settitle },
+            { "update",     &gui_update },
             { nullptr, nullptr }
     };
     luaL_register(L, "gui", funcReg);
