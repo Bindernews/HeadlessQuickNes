@@ -86,9 +86,6 @@ private:
      */
     void processEvents();
 
-    // Copied directly from bizinterface.cpp in BizHawk/quicknes
-    void blit(Nes_Emu *e, int32_t *dest, const int32_t *colors, int cropleft, int croptop, int cropright, int cropbottom);
-
     // Pointer to the state we're listening to
     HQNState &m_state;
     // Window pointer

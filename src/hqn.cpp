@@ -6,6 +6,22 @@
 namespace hqn
 {
 
+// Function to initalize the video palette
+int32_t *_initF_VideoPalette()
+{
+    static int32_t VideoPalette[512];
+    const Nes_Emu::rgb_t *palette = Nes_Emu::nes_colors;
+    for (int i = 0; i < 512; i++)
+    {
+        VideoPalette[i] = palette[i].red << 16 | palette[i].green << 8
+            | palette[i].blue | 0xff000000;
+    }
+    return VideoPalette;
+}
+
+// Initialize the video palette
+const int32_t *HQNState::NES_VIDEO_PALETTE = _initF_VideoPalette();
+
 // simulate the write so we'll know how long the buffer needs to be
 class Sim_Writer : public Data_Writer
 {
@@ -163,6 +179,32 @@ double HQNState::getFPS() const
     // round to 2 decimal places
     fps = std::floor(fps * 100) / 100;
     return fps;
+}
+
+// Copied from bizinterface.cpp in BizHawk/quicknes
+void HQNState::blit(int32_t *dest, const int32_t *colors, int cropleft, int croptop, int cropright, int cropbottom)
+{
+    // what is the point of the 256 color bitmap and the dynamic color allocation to it?
+    // why not just render directly to a 512 color bitmap with static palette positions?
+    Nes_Emu *e = m_emu; // e was a parameter but since this is now part of a class, it's just in here
+    const int srcpitch = e->frame().pitch;
+    const unsigned char *src = e->frame().pixels;
+    const unsigned char *const srcend = src + (e->image_height - cropbottom) * srcpitch;
+
+    const short *lut = e->frame().palette;
+
+    const int rowlen = 256 - cropleft - cropright;
+
+    src += cropleft;
+    src += croptop * srcpitch;
+
+    for (; src < srcend; src += srcpitch)
+    {
+        for (int i = 0; i < rowlen; i++)
+        {
+            *dest++ = colors[lut[src[i]]];
+        }
+    }
 }
 
 } // end namespace hqn

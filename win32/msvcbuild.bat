@@ -15,7 +15,7 @@ set HQLINK=link /nologo
 set HQMT=mt /nologo
 set OUTDIR=..\bin
 set HQEXENAME=%OUTDIR%\hqnes.exe
-set SRC_HQN=..\src\*.cpp ..\src\*.c
+set SRC_HQN=..\src\*.cpp
 set SRC_QUICKNES=..\quicknes\nes_emu\*.cpp ..\quicknes\fex\*.cpp
 set LIB_QUICKNES=..\quicknes\quicknes.lib
 
@@ -49,6 +49,6 @@ MKDIR %OUTDIR%
 rem Compile HQN
 %HQCOMPILE% /I"..\quicknes" /I"..\LuaJIT\src" /I"..\SDL2\include" %SRC_HQN%
 %HQLINK% /out:%HQEXENAME% /LIBPATH:"..\SDL2\lib\x86" *.obj "..\LuaJIT\src\lua51.lib" ^
-    SDL2.lib SDL2main.lib SDL2_ttf.lib "%LIB_QUICKNES%" opengl32.lib
+    SDL2.lib SDL2main.lib SDL2_ttf.lib "%LIB_QUICKNES%"
 DEL *.obj
 :END

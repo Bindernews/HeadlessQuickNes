@@ -28,6 +28,12 @@ function.
 class HQNState
 {
 public:
+
+    static const int32_t *NES_VIDEO_PALETTE;
+
+    /**
+     * Constructor.
+     */
     HQNState();
     ~HQNState();
 
@@ -90,6 +96,12 @@ public:
      */
     double getFPS() const;
 
+    /**
+     * Blit the contents of the NES screen to dest. Dest should be able to hold 256*240 ints.
+     * Unless you want to change the color palette you should use NES_VIDEO_PALETTE for colors.
+     */
+    void blit(int32_t *dest, const int32_t *colors, int cropleft, int croptop, int cropright, int cropbottom);
+
     inline HQNListener *getListener() const
     { return m_listener; }
 
@@ -103,6 +115,7 @@ public:
     { return m_keyboard; }
 
 private:
+    // Safely unload the currently loaded rom
     void unloadRom();
 
     /* A reference to the emulator instance. */

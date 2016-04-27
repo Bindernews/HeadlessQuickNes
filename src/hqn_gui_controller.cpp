@@ -14,23 +14,6 @@ const char *DEFAULT_WINDOW_TITLE = "HeadlessQuickNES";
 const SDL_Rect NES_BLIT_RECT = {0, 0, 256, 240};
 
 
-// Function to initalize the video palette
-int32_t *_initF_VideoPalette()
-{
-    static int32_t VideoPalette[512];
-    const Nes_Emu::rgb_t *palette = Nes_Emu::nes_colors;
-    for (int i = 0; i < 512; i++)
-    {
-        VideoPalette[i] = palette[i].red << 16 | palette[i].green << 8
-            | palette[i].blue | 0xff000000;
-    }
-    return VideoPalette;
-}
-
-// Initialize the video palette
-const int32_t *VideoPalette = _initF_VideoPalette();
-
-
 GUIController::GUIController(HQNState &state)
 :m_state(state)
 {
@@ -134,7 +117,7 @@ void GUIController::update(bool readNES)
     {
         if (SDL_LockTexture(m_tex, nullptr, &nesPixels, &pitch) < 0)
             return;
-        blit(m_state.emu(), (int32_t*)nesPixels, VideoPalette, 0, 0, 0, 0);
+        m_state.blit((int32_t*)nesPixels, HQNState::NES_VIDEO_PALETTE, 0, 0, 0, 0);
         SDL_UnlockTexture(m_tex);
     }
     
@@ -150,32 +133,6 @@ void GUIController::update(bool readNES)
 void GUIController::onAdvanceFrame(HQNState *state)
 {
     update(true);
-}
-
-// Copied directly from bizinterface.cpp in BizHawk/quicknes
-void GUIController::blit(Nes_Emu *e, int32_t *dest, const int32_t *colors, int cropleft, int croptop, int cropright, int cropbottom)
-{
-    // what is the point of the 256 color bitmap and the dynamic color allocation to it?
-    // why not just render directly to a 512 color bitmap with static palette positions?
-
-    const int srcpitch = e->frame().pitch;
-    const unsigned char *src = e->frame().pixels;
-    const unsigned char *const srcend = src + (e->image_height - cropbottom) * srcpitch;
-
-    const short *lut = e->frame().palette;
-
-    const int rowlen = 256 - cropleft - cropright;
-
-    src += cropleft;
-    src += croptop * srcpitch;
-
-    for (; src < srcend; src += srcpitch)
-    {
-        for (int i = 0; i < rowlen; i++)
-        {
-            *dest++ = colors[lut[src[i]]];
-        }
-    }
 }
 
 void GUIController::setTitle(const char *title)
