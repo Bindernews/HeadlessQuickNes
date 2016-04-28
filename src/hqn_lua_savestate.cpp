@@ -128,25 +128,6 @@ int savestate_savememory(lua_State *L)
     return 1;
 }
 
-int savestate_test(lua_State *L)
-{
-	HQN_STATE(state);
-	char *data;
-	const char *err;
-	size_t size;
-	size_t realSize;
-
-	size = 5000;
-	data = new char[size];
-	err = state->saveState(data, size, &realSize);
-	err = state->loadState(data, size);
-	if (err)
-	{
-		luaL_error(L, "Failed to load state: %s", err);
-	}
-	return 0;
-}
-
 int savestate_init_(lua_State *L)
 {
     luaL_Reg reg[] = {
@@ -154,7 +135,6 @@ int savestate_init_(lua_State *L)
         { "loadmemory", &savestate_loadmemory },
         { "save",       &savestate_save },
         { "savememory", &savestate_savememory },
-		{ "test",       &savestate_test },
         { nullptr, nullptr }
     };
     luaL_register(L, "savestate", reg);

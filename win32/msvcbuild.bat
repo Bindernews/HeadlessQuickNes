@@ -39,7 +39,7 @@ if defined DEBUG (
 rem Compile quicknes into a library we can link to.
 rem We don't want to compile it multiple times.
 if not exist ..\quicknes\quicknes.lib (
-    %HQCOMPILE% /I"..\quicknes" /wd4244 /wd4996 %SRC_QUICKNES%
+    %HQCOMPILE% /I"..\quicknes" /D__LIBRETRO__ /wd4244 /wd4996 %SRC_QUICKNES%
     lib /OUT:%LIB_QUICKNES% *.obj
     DEL *.obj
 )
