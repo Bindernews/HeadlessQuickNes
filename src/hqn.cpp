@@ -134,17 +134,20 @@ void HQNState::unloadRom()
 // Advance the emulator
 error_t HQNState::advanceFrame(bool sleep)
 {
-    Uint32 ticks = SDL_GetTicks();
-    m_frameTime = ticks - m_prevFrame;
+    Uint32 ticks;
+    ticks = SDL_GetTicks();
     Uint32 wantTicks = m_prevFrame + m_msPerFrame;
     if (wantTicks > ticks)
     {
         SDL_Delay(wantTicks - ticks);
     }
-    m_prevFrame = ticks;
+    // m_frameTime = wantTicks - m_prevFrame;
     error_t result = m_emu->emulate_frame(joypad[0], joypad[1]);
     if (m_listener)
         m_listener->onAdvanceFrame(this);
+    ticks = SDL_GetTicks();
+    m_frameTime = ticks - m_prevFrame;
+    m_prevFrame = ticks;
     return result;
 }
 
