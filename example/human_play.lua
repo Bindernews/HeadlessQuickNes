@@ -1,6 +1,7 @@
 -- An example script which allows playing via normal keyboard controls.
--- Use the arrow keys to move, Z is A, X is B and S and A are save and load
--- state respectively. The current measured FPS will be shown in the title bar.
+-- Use the arrow keys to move, Enter = Start, Backspace = Select,
+-- Z is A, X is B and S and A are save and load state respectively.
+-- The current measured FPS will be shown in the title bar.
 -- Note this requires the GUI to be enabled. See the example hqnes.cfg.
 
 emu.setframerate(60) -- limit the framerate to 60 fps (kinda sorta)
@@ -13,6 +14,8 @@ while true do
         right = kb.Right or false,
         up = kb.Up or false,
         down = kb.Down or false,
+        start = kb.Return or false,
+        select = kb.Backspace or false,
         a = kb.Z or false,
         b = kb.X or false,
     }
