@@ -62,6 +62,18 @@ namespace hqn_lua
 		return 1;
 	}
 
+	int emu_loadrom(lua_State *L)
+	{
+		HQN_STATE(state);
+		const char *romname = luaL_checkstring(L, 1);
+		const char *err = state->loadROM(romname);
+		if (err)
+		{
+			return luaL_error(L, "Error when loading ROM %s: %s", romname, err);
+		}
+		return 0;
+	}
+
 	int emu_init_(lua_State *L)
 	{
 		luaL_Reg funcReg[] = {
@@ -70,6 +82,7 @@ namespace hqn_lua
 				{ "getframerate", &emu_getframerate },
 				{ "getfps",       &emu_getfps },
 				{ "getpixels",    &emu_getpixels },
+				{ "loadrom",      &emu_loadrom },
 				{ nullptr, nullptr }
 		};
 		luaL_register(L, "emu", funcReg);

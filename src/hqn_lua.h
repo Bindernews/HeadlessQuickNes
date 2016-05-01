@@ -36,4 +36,7 @@ void init_nes(lua_State *L, HQNState *state);
 #define HQN_EMULATOR(var) Nes_Emu *var = hqn_get_nes(L)
 
 }
+
+extern "C" int luaopen_hqn(lua_State *L);
+
 #endif // __HQN_LUA_H__

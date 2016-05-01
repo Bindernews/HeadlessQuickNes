@@ -22,6 +22,7 @@ GUIController::GUIController(HQNState &state)
     m_renderer = nullptr;
     m_window = nullptr;
     m_overlay = nullptr;
+    m_closeOp = CLOSE_QUIT;
 }
 
 GUIController::~GUIController()
@@ -34,6 +35,7 @@ GUIController::~GUIController()
         SDL_DestroyRenderer(m_renderer);
     if (m_window)
         SDL_DestroyWindow(m_window);
+    m_state.setListener(nullptr);
 }
 
 GUIController *GUIController::create(HQNState &state)
@@ -140,6 +142,16 @@ void GUIController::setTitle(const char *title)
     SDL_SetWindowTitle(m_window, title);
 }
 
+void GUIController::setCloseOperation(CloseOperation closeop)
+{
+    m_closeOp = closeop;
+}
+
+GUIController::CloseOperation GUIController::getCloseOperation() const
+{
+    return m_closeOp;
+}
+
 void GUIController::processEvents()
 {
     bool quit = false;
@@ -155,7 +167,15 @@ void GUIController::processEvents()
     }
     if (quit)
     {
-        endItAll();
+        if (m_closeOp & CLOSE_QUIT)
+        {
+            exit(0);
+        }
+        if (m_closeOp & CLOSE_DELETE)
+        {
+            m_state.setListener(nullptr);
+            delete this;
+        }
     }
 }
 

@@ -15,6 +15,18 @@ namespace hqn
 class GUIController : public HQNListener
 {
 public:
+
+    enum CloseOperation
+    {
+        // Do nothing when the window is closed
+        CLOSE_NONE = 0,
+        // Quit the program when the gui is closed
+        CLOSE_QUIT = (1 << 0),
+        // Call delete on the GUIController when the gui is closed. Also set
+        // the correlated state's listener to null.
+        CLOSE_DELETE = (1 << 1),
+    };
+
     virtual ~GUIController();
 
     /**
@@ -66,6 +78,14 @@ public:
     inline Surface &getOverlay()
     { return *m_overlay; }
 
+    /**
+     * Set what happens when the window is closed.
+     * This should be a bitwise-or of values from CloseOperation.
+     * The default is CLOSEOP_QUIT.
+     */
+    void setCloseOperation(CloseOperation ops);
+    CloseOperation getCloseOperation() const;
+
     // Methods overriden from superclass.
     virtual void onLoadROM(HQNState *state, const char *filename);
     virtual void onAdvanceFrame(HQNState *state);
@@ -106,6 +126,8 @@ private:
     int m_scale;
     // Should the emulator quit
     bool m_quit;
+    // Should we quit when the window closes
+    CloseOperation m_closeOp;
 };
 
 }

@@ -1,12 +1,13 @@
 #include "hqn_lua.h"
 #include "hqn_gui_controller.h"
 #include "hqn_surface.h"
+#include <SDL.h>
 
 using hqn::Color;
 
 #define NO_GUI_ERROR "GUI not available"
-#define CHECK_GUI(state, name) hqn::GUIController *name = static_cast<hqn::GUIController*>(state->getListener()); \
-    if (!name) { return luaL_error(L, "%s", NO_GUI_ERROR); }
+#define GET_GUI(state, name) hqn::GUIController *name = static_cast<hqn::GUIController*>(state->getListener())
+#define CHECK_GUI(state, name) GET_GUI(state, name); if (!name) { return luaL_error(L, "%s", NO_GUI_ERROR); }
 
 namespace hqn_lua
 {
@@ -167,6 +168,49 @@ int gui_update(lua_State *L)
     return 0;
 }
 
+// Enable the GUI from code
+int gui_enable(lua_State *L)
+{
+    HQN_STATE(state);
+    
+    // We can only call SDL_InitSubSystem once
+    if (!SDL_WasInit(SDL_INIT_VIDEO))
+    {
+        if (SDL_InitSubSystem(SDL_INIT_VIDEO) != 0)
+        {
+            return luaL_error(L, "Failed to initialize video: %s", SDL_GetError());
+        }
+    }
+
+    // But maybe the user can close the window and code can re-open it
+    GET_GUI(state, gui);
+    if (!gui)
+    {
+        hqn::GUIController *controller = nullptr;
+
+        // Now try to create the gui controller
+        if (controller = hqn::GUIController::create(*state))
+        {
+            // The guiController needs to listen to events from HQNState
+            state->setListener(controller);
+            controller->setCloseOperation(hqn::GUIController::CLOSE_DELETE);
+        }
+        else
+        {
+            return luaL_error(L, "Failed to create window: %s", SDL_GetError());
+        }
+    }
+    return 0;
+}
+
+int gui_isenabled(lua_State *L)
+{
+    HQN_STATE(state);
+    GET_GUI(state, gui);
+    lua_pushboolean(L, gui != nullptr);
+    return 1;
+}
+
 int gui_init_(lua_State *L)
 {
     luaL_Reg funcReg[] = {
@@ -181,6 +225,8 @@ int gui_init_(lua_State *L)
 			{ "getscale",      &gui_getscale },
             { "settitle",   &gui_settitle },
             { "update",     &gui_update },
+            { "enable",     &gui_enable },
+            { "isenabled",  &gui_isenabled },
             { nullptr, nullptr }
     };
     luaL_register(L, "gui", funcReg);

@@ -1,7 +1,10 @@
 
 #include "hqn_lua.h"
+#include <SDL.h>
+#include <SDL_ttf.h>
 
 #define HQN_STATE_REF "_hqn_state"
+#define SDL_INIT_FAILED_MSG "Failed to initialize SDL: %s"
 
 namespace hqn_lua
 {
@@ -39,4 +42,19 @@ HQNState *hqn_get_state(lua_State *L)
     return ref;
 }
 
+}
+
+extern "C"
+int luaopen_hqn(lua_State *L)
+{
+    if (SDL_Init(0) < 0)
+    {
+        return luaL_error(L, SDL_INIT_FAILED_MSG, SDL_GetError());
+    }
+    if (TTF_Init() < 0)
+    {
+        return luaL_error(L, SDL_INIT_FAILED_MSG, SDL_GetError());
+    }
+    hqn_lua::init_nes(L, new hqn::HQNState());
+    return 0;
 }
