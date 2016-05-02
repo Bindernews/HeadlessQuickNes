@@ -22,7 +22,7 @@
 
 #define DISABLE_AUTO_FILE 1
 
-#define HAVE_STDINT_H
+#define HAVE_STDINT_H 1
 
 // Use standard config.h if present
 #ifdef HAVE_CONFIG_H
