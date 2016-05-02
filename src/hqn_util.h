@@ -4,7 +4,7 @@
 #include <cstdint>
 #include <cstdlib>
 
-namespace hqn_util
+namespace hqn
 {
 
 /*

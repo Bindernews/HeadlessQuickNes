@@ -13,19 +13,24 @@ using HQNState = hqn::HQNState;
 /*
 Given the lua_State get the corresponding HQNState
 */
-HQNState *hqn_get_state(lua_State *L);
+DLLEXPORT HQNState *hqn_get_state(lua_State *L);
 
 /*
 Get the NES emulator from the Lua state.
 Used by the lua C api.
 */
-Nes_Emu *hqn_get_nes(lua_State *L);
+DLLEXPORT Nes_Emu *hqn_get_nes(lua_State *L);
 
 /*
 Initialize the lua state with functions for working with the NES
 This should be the first function you call.
 */
 void init_nes(lua_State *L, HQNState *state);
+
+/*
+Use this for loading roms.
+*/
+int emu_loadrom(lua_State *L);
 
 /* Macro for lua calls which are not yet implemented. */
 #define HQN_UNIMPLEMENTED(L) luaL_error(L, "NOT YET IMPLEMENTED")
@@ -37,6 +42,6 @@ void init_nes(lua_State *L, HQNState *state);
 
 }
 
-extern "C" int luaopen_hqn(lua_State *L);
+extern "C" DLLEXPORT int luaopen_hqnes(lua_State *L);
 
 #endif // __HQN_LUA_H__

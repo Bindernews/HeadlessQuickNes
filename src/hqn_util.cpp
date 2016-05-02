@@ -4,7 +4,7 @@
 #include <cstdio>
 #include <sys/stat.h>
 
-namespace hqn_util
+namespace hqn
 {
 
 

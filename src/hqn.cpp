@@ -75,7 +75,7 @@ error_t HQNState::loadROM(const char *filename)
     // unload any existing rom data
     unloadRom();
 
-    if (!hqn_util::load_file(filename, (char**)(&m_romData), &m_romSize))
+    if (!load_file(filename, (char**)(&m_romData), &m_romSize))
     {
         return "Failed to open file";
     }

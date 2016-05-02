@@ -3,7 +3,6 @@
 #include "hqn_util.h"
 
 // Import everything from hqn_util
-using namespace hqn_util;
 
 namespace hqn_lua
 {
@@ -26,7 +25,7 @@ int get_joypad_key_index(const char *name)
 {
     for (int i = 0; i < JOYPAD_MAX_PAD; i++)
     {
-        if (stricmp(name, JOYPAD_NAMES[i]) == 0)
+        if (hqn::stricmp(name, JOYPAD_NAMES[i]) == 0)
         {
             return i;
         }

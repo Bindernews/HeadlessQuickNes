@@ -1,8 +1,8 @@
 #ifndef __HQN_SURFACE_H__
 #define __HQN_SURFACE_H__
 
+#include "hqn.h"
 #include <cstdint>
-#include <algorithm>
 #include <SDL_surface.h>
 
 namespace hqn
@@ -34,7 +34,7 @@ enum BlendMode
  * A surface which provides drawing operations.
  * The format is always RGBA.
  */
-class Surface
+class DLLEXPORT Surface
 {
 public:
     typedef Color (*BlendFunction)(Color src, Color dst);
@@ -125,19 +125,6 @@ private:
     static Color blendBlend(Color, Color);
     static Color blendAdd(Color, Color);
     static Color blendMod(Color, Color);
-
-    // inlined functions for bounds checking
-    inline int boundLeft(int x)
-    { return std::max(x, 0); }
-
-    inline int boundRight(int x)
-    { return std::min(x, (int)m_width - 1); }
-
-    inline int boundTop(int y)
-    { return std::max(y, 0); }
-
-    inline int boundBottom(int y)
-    { return std::min(y, (int)m_height - 1); }
 
     static void *loadFont(const char *path, int pt);
 

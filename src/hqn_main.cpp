@@ -1,30 +1,17 @@
 
 #define SDL_MAIN_HANDLED
 #include <cstdio>
-#include <csetjmp>
 #include <SDL.h>
 #include <SDL_ttf.h>
 #include "gl_include.h"
 #include "hqn.h"
 #include "hqn_lua.h"
-#include "options.h"
 #include "hqn_util.h"
-#include "hqn_gui_controller.h"
 
-#ifndef CONFIG_FILENAME
-#define CONFIG_FILENAME "hqnes.cfg"
-#endif
-
-#define DEFAULT_FILENAME "hqn"
-
-// Import json so we can read the config file.
-// using json = nlohmann::json;
+#define DEFAULT_FILENAME "hqnes"
 
 namespace hqn
 {
-
-// Global setjmp state
-jmp_buf endItAllBuffer;
 
 // Print the usage message.
 void printUsage(const char *filename)
@@ -33,17 +20,28 @@ void printUsage(const char *filename)
     printf("usage: %s <romfile> <lua_script>\n", fname);
 }
 
+bool luaCheck(lua_State *L, int errval)
+{
+    if (errval != 0)
+    {
+        fprintf(stderr, "Error: %s\n", lua_tostring(L, -1));
+        return false;
+    }
+    return true;
+}
+
+int loadROM(lua_State *L, const char *romname)
+{
+    lua_pushcfunction(L, hqn_lua::emu_loadrom);
+    lua_pushstring(L, romname);
+    return lua_pcall(L, 1, 0, 0);
+}
 
 int hqn_main(int argc, char **argv)
 {
+#define LUASAFE(exp) if (!luaCheck(L, exp)) { goto init_fail; }
     // Delcare variables
-    blargg_err_t err;
-    Options opts;
-    HQNState *hstate = nullptr;
-    GUIController *guiController = nullptr;
-    lua_State *lstate = nullptr;
-	bool useGui = false;
-    int sdlInitFlags;
+    lua_State *L = nullptr;
     int exitval = 0;
     
     // We take two arguments, the rom file and a lua script to run.
@@ -53,66 +51,15 @@ int hqn_main(int argc, char **argv)
         return 1;
     }
 
-    if (hqn_util::file_exists(CONFIG_FILENAME))
-    {
-        opts.load(CONFIG_FILENAME);
-    }
-	useGui = opts.getBool("gui", false);
-
-	// Initialize SDL
-	/* Enable standard application logging */
-	SDL_LogSetPriority(SDL_LOG_CATEGORY_APPLICATION, SDL_LOG_PRIORITY_INFO);
-
-	sdlInitFlags = useGui ? SDL_INIT_VIDEO : 0;
-    if (SDL_Init(sdlInitFlags) < 0)
-    {
-        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Couldn't initialize SDL: %s\n", SDL_GetError());
-        return 1;
-	}
-    if (TTF_Init() < 0)
-    {
-        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Failed to initialize SDL_ttf: %s\n", TTF_GetError());
-        return 1;
-    }
-
-    // Now we create our emulator state, allocated on the heap just because
-    hstate = new HQNState();
-    // Create the GUI if we have to
-    if (useGui)
-    {
-        // Now try to create the gui controller
-        if (!(guiController = GUIController::create(*hstate)))
-            goto init_fail;
-        // The guiController needs to listen to events from HQNState
-        hstate->setListener(guiController);
-    }
-
-    // Now that most things are set up let's read the options
-    hstate->setFramerate(opts.getInt("framerate", 0));
-
-	// Load the ROM
-	err = hstate->loadROM(argv[1]);
-	if (err)
-	{
-		fprintf(stderr, "Failed to load rom %s: %s\n", argv[1], err);
-        goto init_fail;
-	}
-
     // And set up our lua state
-    lstate = luaL_newstate();
-    luaL_openlibs(lstate);
-    hqn_lua::init_nes(lstate, hstate);
+    L = luaL_newstate();
+    luaL_openlibs(L);
+    // Load the hqnes library
+    lua_pushcfunction(L, luaopen_hqnes);
+    LUASAFE(lua_pcall(L, 0, 0, 0));
 
-    if (!setjmp(endItAllBuffer))
-    {
-        // Now run the Lua script.
-        int luaErr = luaL_dofile(lstate, argv[2]);
-        if (luaErr != 0)
-        {
-            fprintf(stderr, "ERROR: %s\n", lua_tostring(lstate, -1));
-        }
-    }
-
+    // Now run the main Lua script.
+    luaCheck(L, luaL_dofile(L, argv[2]));
     goto close_down;
 
 init_fail:   // label for if initializing fails
@@ -121,27 +68,15 @@ init_fail:   // label for if initializing fails
 
 close_down:  // label for when we want to shut down
     // Safely delete everything
-    if (lstate)
-        lua_close(lstate);
-    if (guiController)
+    if (L)
     {
-        hstate->setListener(nullptr);
-        delete guiController;
+        lua_close(L);
     }
-    if (hstate)
-        delete hstate;
 
     TTF_Quit();
     SDL_Quit();
 
     return exitval;
-}
-
-
-void endItAll()
-{
-    // Go back into hqn_main to the setjmp and continue from there
-    longjmp(endItAllBuffer, 1);
 }
 
 } // end namespace hqn

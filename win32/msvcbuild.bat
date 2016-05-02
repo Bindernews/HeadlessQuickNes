@@ -10,14 +10,32 @@ if not defined INCLUDE goto :FAIL
 
 setlocal
 
+set SRCDIR=..\src
 set HQCOMPILE=cl /nologo /c /O2 /W3 /D_CRT_SECURE_NO_WARNINGS /wd4800 /wd4804 /MD
 set HQLINK=link /nologo
-set HQMT=mt /nologo
 set OUTDIR=..\bin
-set HQEXENAME=%OUTDIR%\hqnes.exe
-set SRC_HQN=..\src\*.cpp
+set TARGET=%OUTDIR%\hqnes.dll
+set SRC_HQN=..\src\hqn.cpp ^
+            ..\src\hqn_gui_controller.cpp ^
+            ..\src\hqn_lua.cpp ^
+            ..\src\hqn_lua_emu.cpp ^
+            ..\src\hqn_lua_gui.cpp ^
+            ..\src\hqn_lua_input.cpp ^
+            ..\src\hqn_lua_joypad.cpp ^
+            ..\src\hqn_lua_mainmemory.cpp ^
+            ..\src\hqn_lua_savestate.cpp ^
+            ..\src\hqn_surface.cpp ^
+            ..\src\hqn_util.cpp
+
 set SRC_QUICKNES=..\quicknes\nes_emu\*.cpp ..\quicknes\fex\*.cpp
 set LIB_QUICKNES=..\quicknes\quicknes.lib
+
+if "%1"=="clean" (
+    echo Removing all binaries
+    del %OUTDIR%\hqnes.dll %OUTDIR%\hqnes.lib %LIB_QUICKNES%
+    del *.obj
+    goto END
+)
 
 rem Check for missing libraries
 
@@ -31,7 +49,8 @@ if not exist ..\SDL2 (
 )
 
 rem Enable debug options
-if defined DEBUG (
+if "%DEBUG%"=="1" (
+    echo "DEBUG mode enabled"
     set HQCOMPILE=%HQCOMPILE% /MDd /Zi /Od
     set HQLINK=%HQLINK% /DEBUG
 )
@@ -41,14 +60,14 @@ rem We don't want to compile it multiple times.
 if not exist ..\quicknes\quicknes.lib (
     %HQCOMPILE% /I"..\quicknes" /D__LIBRETRO__ /wd4244 /wd4996 %SRC_QUICKNES%
     lib /OUT:%LIB_QUICKNES% *.obj
-    DEL *.obj
+    del *.obj
 )
 
-MKDIR %OUTDIR%
+mkdir %OUTDIR%
 
-rem Compile HQN
-%HQCOMPILE% /I"..\quicknes" /I"..\LuaJIT\src" /I"..\SDL2\include" %SRC_HQN%
-%HQLINK% /out:%HQEXENAME% /LIBPATH:"..\SDL2\lib\x86" *.obj "..\LuaJIT\src\lua51.lib" ^
+rem Compile HQN as a dll
+%HQCOMPILE% /DHQNES_SHARED=1 /I"..\quicknes" /I"..\LuaJIT\src" /I"..\SDL2\include" %SRC_HQN%
+%HQLINK% /DLL /out:%TARGET% /LIBPATH:"..\SDL2\lib\x86" *.obj "..\LuaJIT\src\lua51.lib" ^
     SDL2.lib SDL2main.lib SDL2_ttf.lib "%LIB_QUICKNES%"
 DEL *.obj
 :END

@@ -1,6 +1,6 @@
 #include "hqn_gui_controller.h"
-#include "hqn_main.h"
 #include "hqn_util.h"
+#include <cstring>
 #include <SDL.h>
 
 #define DEFAULT_WIDTH 256

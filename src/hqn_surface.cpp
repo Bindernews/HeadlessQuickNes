@@ -1,5 +1,6 @@
 #include <string>
 #include <map>
+#include <algorithm>
 #include <cstring>
 #include <cmath>
 #include <SDL_ttf.h>
@@ -8,6 +9,14 @@
 
 namespace hqn
 {
+
+// basically inlined functions for bounds checking
+// Note that when #include'in windows.h you need to #define NOMINMAX becase
+// windows.h breaks std::min and std::max by #defining min and max. ugh
+#define boundLeft(x) std::max((int)(x), 0)
+#define boundRight(x) std::min((int)(x), (int)m_width - 1)
+#define boundTop(y) std::max((int)(y), 0)
+#define boundBottom(y) std::min((int)(y), (int)m_height - 1)
 
 #ifdef __WIN32__
 #define DEFAULT_FONT "C:/Windows/Fonts/cour.ttf" // Courier New
@@ -81,6 +90,7 @@ void Surface::drawRect(int x, int y, size_t w, size_t h, Color color)
 {
     int x2 = x + w;
     int y2 = y + h;
+
     int x1Bound = boundLeft(x);
     int y1Bound = boundTop(y) + 1;
     int x2Bound = boundRight(x2) - 1;
@@ -110,6 +120,7 @@ void Surface::fillRect(int x, int y, size_t w, size_t h, Color fg, Color bg)
     // now fill in the middle
     int x2 = boundRight(x + w - 1);
     int y2 = boundBottom(y + h - 1);
+
     x = boundLeft(x);
     y = boundTop(y);
     for (int yy = y + 1; yy < y2; yy++)

@@ -23,7 +23,7 @@ int savestate_load(lua_State *L)
     // Get the name of the file we're loading
     filename = luaL_checkstring(L, 1);
     // load the file into memory
-    if (!hqn_util::load_file(filename, &dataRef, &dataSize) != 0)
+    if (!hqn::load_file(filename, &dataRef, &dataSize) != 0)
     {
         return luaL_error(L, ERR_CANNOT_READ_FILE, filename);
     }
@@ -102,7 +102,7 @@ int savestate_save(lua_State *L)
     // Get the data
     savestate_to_ram(L, &data, &size);
     // Write it to a file
-    bool success = hqn_util::save_file(filename, data, size);
+    bool success = hqn::save_file(filename, data, size);
     // delete our data either way
     delete[] data;
     // now return success or throw an error

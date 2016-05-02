@@ -45,7 +45,7 @@ HQNState *hqn_get_state(lua_State *L)
 }
 
 extern "C"
-int luaopen_hqn(lua_State *L)
+int luaopen_hqnes(lua_State *L)
 {
     if (SDL_Init(0) < 0)
     {

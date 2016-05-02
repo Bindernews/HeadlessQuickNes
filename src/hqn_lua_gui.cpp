@@ -1,7 +1,7 @@
-#include "hqn_lua.h"
-#include "hqn_gui_controller.h"
 #include "hqn_surface.h"
+#include "hqn_lua.h"
 #include <SDL.h>
+#include "hqn_gui_controller.h"
 
 using hqn::Color;
 
@@ -12,7 +12,7 @@ using hqn::Color;
 namespace hqn_lua
 {
 
-const Color TRANSPARENT {0, 0, 0, 0};
+const Color ALPHA = {0, 0, 0, 0};
 const Color BLACK = {0, 0, 0, 255};
 
 Color parseColor(lua_State *L, int index, Color def)
@@ -44,7 +44,7 @@ int gui_drawRectangle(lua_State *L)
     h = lua_tointeger(L, 4);
     // parse colors
     fgColor = parseColor(L, 5, BLACK);
-    bgColor = parseColor(L, 6, TRANSPARENT);
+    bgColor = parseColor(L, 6, ALPHA);
     // draw to buffer
     gui->getOverlay().fillRect(x, y, w, h, fgColor, bgColor);
     return 0;
@@ -64,7 +64,7 @@ int gui_drawBox(lua_State *L)
     h = lua_tointeger(L, 4);
     // parse colors
     fgColor = parseColor(L, 5, BLACK);
-    bgColor = parseColor(L, 6, TRANSPARENT);
+    bgColor = parseColor(L, 6, ALPHA);
     // draw to buffer
     gui->getOverlay().fillRect(x, y, x + w, y + h, fgColor, bgColor);
     return 0;
@@ -106,7 +106,7 @@ int gui_clear(lua_State *L)
 {
     HQN_STATE(state);
     CHECK_GUI(state, gui);
-    Color clearColor = parseColor(L, 1, TRANSPARENT);
+    Color clearColor = parseColor(L, 1, ALPHA);
     gui->getOverlay().clear(clearColor);
     return 0;
 }

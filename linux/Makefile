@@ -1,5 +1,4 @@
 
-TARGET = ../hqnes
 LIB_QUICKNES = ../quicknes/libquicknes.a
 LIB_LUAJIT = ../LuaJIT/src/libluajit.so
 LINKFLAGS = -L ../quicknes/ -lSDL2_ttf -lquicknes -ldl `pkg-config --libs sdl2 luajit`
@@ -8,7 +7,6 @@ CXXFLAGS = -std=c++11 -I ../quicknes -I ../LuaJIT/src -O3 -Wno-multichar -fno-ex
 
 SOURCES = \
 	../src/hqn.cpp \
-	../src/hqn_main.cpp \
 	../src/hqn_util.cpp \
 	../src/hqn_lua.cpp \
 	../src/hqn_lua_emu.cpp \
@@ -18,8 +16,9 @@ SOURCES = \
 	../src/hqn_lua_mainmemory.cpp \
 	../src/hqn_lua_savestate.cpp \
 	../src/hqn_gui_controller.cpp \
-	../src/hqn_surface.cpp \
-	../src/options.cpp
+	../src/hqn_surface.cpp
+#   ../src/hqn_main.cpp    <-- Don't include this because it's not necessary for shared build
+#   ../src/options.cpp
 #   ../src/gl_include.c
 
 OBJECTS = $(SOURCES:.cpp=.o) \
@@ -27,8 +26,12 @@ OBJECTS = $(SOURCES:.cpp=.o) \
 %.o: %.cpp
 	$(CXX) -c -o $@ $< $(CXXFLAGS)
 
-$(TARGET): $(OBJECTS) $(LIB_QUICKNES)
+../hqnes: $(OBJECTS) $(LIB_QUICKNES) ../src/hqn_main.o
 	$(CXX) -o $@ $(OBJECTS) $(LINKFLAGS)
+
+# Build as shared library
+../hqnes.so: $(OBJECTS) $(LIB_QUICKNES)
+	$(CXX) -o $@ $(OBJECTS) $(LINKFLAGS) -fPIC -shared
 
 $(LIB_QUICKNES):
 	$(MAKE) -C ../quicknes/linux

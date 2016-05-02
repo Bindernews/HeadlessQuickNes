@@ -1,6 +1,16 @@
 #ifndef __HQN_H__
 #define __HQN_H__
 
+#ifdef _WIN32
+# ifdef HQNES_SHARED
+# define DLLEXPORT __declspec(dllexport)
+# else
+# define DLLEXPORT __declspec(dllimport)
+# endif
+#else
+# define DLLEXPORT
+#endif
+
 #include <nes_emu/Nes_Emu.h>
 #include <cstdint>
 
@@ -11,7 +21,7 @@ typedef const char *error_t;
 
 class HQNState;
 
-class HQNListener
+class DLLEXPORT HQNListener
 {
 public:
     virtual void onLoadROM(HQNState *state, const char *filename) = 0;
@@ -22,10 +32,10 @@ public:
 /*
 State which is maintained by the emulator driver.
 
-This should normally be obtained using hqn_get_state() if you are un a lua
+This should normally be obtained using hqn_get_state() if you are in a lua
 function.
 */
-class HQNState
+class DLLEXPORT HQNState
 {
 public:
 
