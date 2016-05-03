@@ -2,12 +2,15 @@
 -- Use the arrow keys to move, Enter = Start, Backspace = Select,
 -- Z is A, X is B and S and A are save and load state respectively.
 -- The current measured FPS will be shown in the title bar.
--- Note this requires the GUI to be enabled. See the example hqnes.cfg.
+require("hqnes")
 
-emu.setframerate(60) -- limit the framerate to 60 fps (kinda sorta)
+gui.enable() -- enable the gui, required if you want to do GUI stuff
+emu.loadrom("smb.nes")
+emu.setframerate(70) -- limit the framerate to 60 fps (kinda sorta)
 gui.setscale(2)      -- set the gui to scale to twice the regular size
 
-while true do
+local kbprev = {}
+while gui.isenabled() do
     local kb = input.get()  -- get the current keyboard state
     joypad.set{
         left = kb.Left or false,
@@ -19,12 +22,16 @@ while true do
         a = kb.Z or false,
         b = kb.X or false,
     }
-    if kb.S then
+    if kb.S and not kbprev.S then
         savestate.save("1.savestate")
     end
-    if kb.A then
+    if kb.A and not kbprev.A then
         savestate.load("1.savestate")
+    end
+    if kb.F11 and not kbprev.F11 then
+        gui.setfullscreen(not gui.isfullscreen())
     end
     gui.settitle("Headless Quick NES " .. tostring(emu.getfps()))
     emu.frameadvance() -- advance the emulator
+    kbprev = kb -- set prev keyboard state to current
 end

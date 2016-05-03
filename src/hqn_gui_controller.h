@@ -51,6 +51,20 @@ public:
     /** Get the window height. */
     size_t getHeight() const;
 
+    /**
+     * Set if the window is fullscreen or not. This will do letterboxing
+     * to maintain the correct aspect ratio.
+     *
+     * If adjust overlay is true it will change the size of the overlay to
+     * match the new screen size, otherwise the overlay will stay the same.
+     */
+    void setFullscreen(bool full, bool adjustOverlay);
+
+    /**
+     * Return true if the window is fullscreen.
+     */
+    bool isFullscreen() const;
+
     /** Get the pointer to the window. Use this to change settings. */
     SDL_Window *ptr();
 
@@ -106,6 +120,12 @@ private:
      */
     void processEvents();
 
+    /** Resize the internal overlay. */
+    bool resizeOverlay(size_t w, size_t h);
+
+    /** Who you gonna call? onResize! Returns false if resizeOverlay fails. */
+    bool onResize(size_t w, size_t h, bool adjustOverlay);
+
     // Pointer to the state we're listening to
     HQNState &m_state;
     // Window pointer
@@ -119,14 +139,18 @@ private:
     // Overlay texture
     SDL_Texture *m_texOverlay;
     // Destination rect for the texture
-    SDL_Rect m_texDest;
+    SDL_Rect m_nesDest;
+    // Destination rect for the overlay
+    SDL_Rect m_overlayDest;
     // Overlay surface which will be drawn on top of the NES display
     Surface *m_overlay;
     // Current scale. Can be 1, 2, 3, 4, 5
     int m_scale;
     // Should the emulator quit
     bool m_quit;
-    // Should we quit when the window closes
+    // Are we currently fullscreen?
+    bool m_isFullscreen;
+    // What happens when the X button is pressed?
     CloseOperation m_closeOp;
 };
 

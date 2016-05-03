@@ -32,7 +32,7 @@ set LIB_QUICKNES=..\quicknes\quicknes.lib
 
 if "%1"=="clean" (
     echo Removing all binaries
-    del %OUTDIR%\hqnes.dll %OUTDIR%\hqnes.lib %LIB_QUICKNES%
+    del %OUTDIR%\hqnes.dll %OUTDIR%\hqnes.lib %OUTDIR%\hqnes.pdb %OUTDIR%\hqnes.exp %LIB_QUICKNES%
     del *.obj
     goto END
 )

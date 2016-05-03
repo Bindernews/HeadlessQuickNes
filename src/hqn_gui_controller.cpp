@@ -1,5 +1,6 @@
 #include "hqn_gui_controller.h"
 #include "hqn_util.h"
+#include <algorithm>
 #include <cstring>
 #include <SDL.h>
 
@@ -11,8 +12,36 @@ namespace hqn
 
 const char *DEFAULT_WINDOW_TITLE = "HeadlessQuickNES";
 
-const SDL_Rect NES_BLIT_RECT = {0, 0, 256, 240};
+const SDL_Rect NES_BLIT_RECT = { 0, 0, DEFAULT_WIDTH, DEFAULT_HEIGHT };
 
+// Determine the letterboxing required to display something on screen.
+// The original code is basically magic.
+// aspectW/H and windowW/H are the aspect ratio and window size, they are
+// inputs. The view* parameters are the outputs and correspond to the
+// calculated area in the window where the view should be.
+void determineLetterbox(double aspectW, double aspectH, double windowW,
+    double windowH, int &viewX, int &viewY, int &viewW, int &viewH)
+{
+    double scale = std::min(windowW / aspectW, windowH / aspectH);
+    viewW = (int)(aspectW * scale);
+    viewH = (int)(aspectH * scale);
+    viewX = (int)(windowW - viewW) / 2;
+    viewY = (int)(windowH - viewH) / 2;
+}
+
+/*
+-- Returns: scale, scissorX, scissorY, scissorW, scissorH, offsetX, offsetY
+function xl.calculateViewport(sizes, winW, winH, scaleInterval, screenFlex )
+    local gameW,gameH = sizes.w, sizes.h
+    local screenW,screenH = winW + screenFlex, winH + screenFlex
+    local scale = math.min(screenW / gameW, screenH / gameH)
+    scale = math.floor(scale * scaleInterval) / scaleInterval
+    local scissorW, scissorH = gameW * scale, gameH * scale
+    local scissorX, scissorY = (winW - scissorW) / 2, (winH - scissorH) / 2
+    local offsetX, offsetY = scissorX / scale, scissorY / scale
+    return scale, scissorX, scissorY, scissorW, scissorH, offsetX, offsetY
+end
+*/
 
 GUIController::GUIController(HQNState &state)
 :m_state(state)
@@ -23,6 +52,7 @@ GUIController::GUIController(HQNState &state)
     m_window = nullptr;
     m_overlay = nullptr;
     m_closeOp = CLOSE_QUIT;
+    m_isFullscreen = false;
 }
 
 GUIController::~GUIController()
@@ -76,24 +106,20 @@ bool GUIController::setScale(int scale)
 {
     if (scale < 1 || scale > 5)
         return false;
+    if (m_isFullscreen)
+        setFullscreen(false, false); // reset to windowed and don't bother changing the overlay
     int winW = DEFAULT_WIDTH * scale;
     int winH = DEFAULT_HEIGHT * scale;
 
     // Change the window size
     SDL_SetWindowSize(m_window, winW, winH);
     
-    // Destroy windows-sized things
-    if (m_overlay)
-        delete m_overlay;
-    if (m_texOverlay)
-        SDL_DestroyTexture(m_texOverlay);
-    // Now re-create them
-    m_overlay = new Surface(winW, winH);
-    if (!(m_texOverlay = SDL_CreateTexture(m_renderer, SDL_PIXELFORMAT_ARGB8888,
-        SDL_TEXTUREACCESS_STREAMING, winW, winW)))
+    if (!onResize(winW, winH, true))
         return false;
-    SDL_SetTextureBlendMode(m_texOverlay, SDL_BLENDMODE_BLEND);
-    m_texDest = { 0, 0, winW, winH };
+
+    // update the overlay destination
+    m_overlayDest = { 0, 0, winW, winH };
+    m_nesDest = { 0, 0, winW, winH };
 
     // Update internal scale variable
     m_scale = scale;
@@ -102,6 +128,59 @@ bool GUIController::setScale(int scale)
 
 int GUIController::getScale() const
 { return m_scale; }
+
+void GUIController::setFullscreen(bool full, bool adjustOverlay)
+{
+    m_isFullscreen = full;
+    SDL_SetWindowFullscreen(m_window, full ? SDL_WINDOW_FULLSCREEN_DESKTOP : 0);
+    int w, h;
+    SDL_GetWindowSize(m_window, &w, &h);
+    onResize((size_t)w, (size_t)h, adjustOverlay);
+}
+
+bool GUIController::isFullscreen() const
+{
+    return m_isFullscreen;
+}
+
+bool GUIController::onResize(size_t w, size_t h, bool adjustOverlay)
+{
+    // first calculate letterboxing
+    int viewX, viewY, viewW, viewH;
+    determineLetterbox(DEFAULT_WIDTH, DEFAULT_HEIGHT, w, h,
+        viewX, viewY, viewW, viewH);
+    // make sure images are put in the right places
+    m_overlayDest = { viewX, viewY, viewW, viewH };
+    m_nesDest = { viewX, viewY, viewW, viewH };
+    if (adjustOverlay && !resizeOverlay(viewW, viewH))
+        return false;
+    return true;
+}
+
+bool GUIController::resizeOverlay(size_t w, size_t h)
+{
+    
+    
+    // destroy the overlay and corresponding texture
+    if (m_overlay)
+    {
+        // first check if the overlay is already the correct size
+        if (m_overlay->getWidth() == (int)w 
+            && m_overlay->getHeight() == (int)h)
+            return true;
+        else
+            delete m_overlay;
+    }
+    if (m_texOverlay)
+        SDL_DestroyTexture(m_texOverlay);
+    // Now re-create them
+    m_overlay = new Surface(w, h);
+    if (!(m_texOverlay = SDL_CreateTexture(m_renderer, SDL_PIXELFORMAT_ARGB8888,
+        SDL_TEXTUREACCESS_STREAMING, w, h)))
+        return false;
+    SDL_SetTextureBlendMode(m_texOverlay, SDL_BLENDMODE_BLEND);
+    return true;
+}
 
 void GUIController::update(bool readNES)
 {
@@ -125,8 +204,8 @@ void GUIController::update(bool readNES)
     
     // render to screen
     SDL_RenderClear(m_renderer);
-    SDL_RenderCopy(m_renderer, m_tex, &NES_BLIT_RECT, nullptr);
-    SDL_RenderCopy(m_renderer, m_texOverlay, &m_texDest, &m_texDest);
+    SDL_RenderCopy(m_renderer, m_tex, &NES_BLIT_RECT, &m_nesDest);
+    SDL_RenderCopy(m_renderer, m_texOverlay, nullptr, &m_overlayDest);
     SDL_RenderPresent(m_renderer);
     // Process any outstanding events
     processEvents();

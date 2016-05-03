@@ -8,6 +8,8 @@ using hqn::Color;
 #define NO_GUI_ERROR "GUI not available"
 #define GET_GUI(state, name) hqn::GUIController *name = static_cast<hqn::GUIController*>(state->getListener())
 #define CHECK_GUI(state, name) GET_GUI(state, name); if (!name) { return luaL_error(L, "%s", NO_GUI_ERROR); }
+// Shortcut macro to get the state and call CHECK_GUI
+#define STATE_GUI(state, gui) HQN_STATE(state); CHECK_GUI(state, gui)
 
 namespace hqn_lua
 {
@@ -32,8 +34,7 @@ Color parseColor(lua_State *L, int index, Color def)
     
 int gui_drawRectangle(lua_State *L)
 {
-    HQN_STATE(state);
-    CHECK_GUI(state, gui);
+    STATE_GUI(state, gui);
     int x, y, w, h;
     Color fgColor;
     Color bgColor;
@@ -52,8 +53,7 @@ int gui_drawRectangle(lua_State *L)
 
 int gui_drawBox(lua_State *L)
 {
-    HQN_STATE(state);
-    CHECK_GUI(state, gui);
+    STATE_GUI(state, gui);
     int x, y, w, h;
     Color fgColor;
     Color bgColor;
@@ -72,8 +72,7 @@ int gui_drawBox(lua_State *L)
 
 int gui_drawLine(lua_State *L)
 {
-    HQN_STATE(state);
-    CHECK_GUI(state, gui);
+    STATE_GUI(state, gui);
     int x1, y1, x2, y2;
     Color fgColor;
 
@@ -88,8 +87,7 @@ int gui_drawLine(lua_State *L)
 
 int gui_drawText(lua_State *L)
 {
-    HQN_STATE(state);
-    CHECK_GUI(state, gui);
+    STATE_GUI(state, gui);
     int x, y;
     const char *text;
     Color fg;
@@ -104,8 +102,7 @@ int gui_drawText(lua_State *L)
 
 int gui_clear(lua_State *L)
 {
-    HQN_STATE(state);
-    CHECK_GUI(state, gui);
+    STATE_GUI(state, gui);
     Color clearColor = parseColor(L, 1, ALPHA);
     gui->getOverlay().clear(clearColor);
     return 0;
@@ -113,24 +110,21 @@ int gui_clear(lua_State *L)
 
 int gui_screenwidth(lua_State *L)
 {
-    HQN_STATE(state);
-    CHECK_GUI(state, gui);
+    STATE_GUI(state, gui);
     lua_pushnumber(L, gui->getOverlay().getWidth());
     return 1;
 }
 
 int gui_screenheight(lua_State *L)
 {
-    HQN_STATE(state);
-    CHECK_GUI(state, gui);
+    STATE_GUI(state, gui);
     lua_pushnumber(L, gui->getOverlay().getHeight());
     return 1;
 }
 
 int gui_setscale(lua_State *L)
 {
-	HQN_STATE(state);
-	CHECK_GUI(state, gui);
+	STATE_GUI(state, gui);
 	int scale = 1;
 	if (!lua_isnil(L, 1))
 	{
@@ -142,16 +136,14 @@ int gui_setscale(lua_State *L)
 
 int gui_getscale(lua_State *L)
 {
-	HQN_STATE(state);
-	CHECK_GUI(state, gui);
+    STATE_GUI(state, gui);
 	lua_pushnumber(L, gui->getScale());
 	return 1;
 }
 
 int gui_settitle(lua_State *L)
 {
-    HQN_STATE(state);
-    CHECK_GUI(state, gui);
+    STATE_GUI(state, gui);
 
     const char *title = lua_tostring(L, 1);
     if (!title)
@@ -160,10 +152,24 @@ int gui_settitle(lua_State *L)
     return 0;
 }
 
+int gui_setfullscreen(lua_State *L)
+{
+    STATE_GUI(state, gui);
+    bool full = lua_toboolean(L, 1);
+    gui->setFullscreen(full, false);
+    return 0;
+}
+
+int gui_isfullscreen(lua_State *L)
+{
+    STATE_GUI(state, gui);
+    lua_pushboolean(L, gui->isFullscreen());
+    return 1;
+}
+
 int gui_update(lua_State *L)
 {
-    HQN_STATE(state);
-    CHECK_GUI(state, gui);
+    STATE_GUI(state, gui);
     gui->update(false);
     return 0;
 }
@@ -214,19 +220,21 @@ int gui_isenabled(lua_State *L)
 int gui_init_(lua_State *L)
 {
     luaL_Reg funcReg[] = {
-            { "drawRectangle", &gui_drawRectangle },
-            { "drawBox",   &gui_drawBox },
-            { "drawLine",  &gui_drawLine },
-            { "drawText",  &gui_drawText },
-            { "clear",     &gui_clear },
-            { "screenwidth",   &gui_screenwidth },
-            { "screenheight",  &gui_screenheight },
-			{ "setscale",      &gui_setscale },
-			{ "getscale",      &gui_getscale },
-            { "settitle",   &gui_settitle },
-            { "update",     &gui_update },
-            { "enable",     &gui_enable },
-            { "isenabled",  &gui_isenabled },
+            { "drawRectangle", gui_drawRectangle },
+            { "drawBox",   gui_drawBox },
+            { "drawLine",  gui_drawLine },
+            { "drawText",  gui_drawText },
+            { "clear",     gui_clear },
+            { "screenwidth",   gui_screenwidth },
+            { "screenheight",  gui_screenheight },
+			{ "setscale",      gui_setscale },
+			{ "getscale",      gui_getscale },
+            { "setfullscreen", gui_setfullscreen },
+            { "isfullscreen",  gui_isfullscreen },
+            { "settitle",   gui_settitle },
+            { "update",     gui_update },
+            { "enable",     gui_enable },
+            { "isenabled",  gui_isenabled },
             { nullptr, nullptr }
     };
     luaL_register(L, "gui", funcReg);
