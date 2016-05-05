@@ -37,6 +37,8 @@ enum BlendMode
 class DLLEXPORT Surface
 {
 public:
+    #define HQN_DEFAULT_PTSIZE 12
+
     typedef Color (*BlendFunction)(Color src, Color dst);
 
     Surface(size_t width, size_t height);
@@ -73,7 +75,7 @@ public:
 	 * Draw UTF8 text on the screen. Be warned that this is slow because it
 	 * has to render the text first.
 	 */
-	void drawText(int x, int y, const char *utf8text, Color fg);
+	void drawText(int x, int y, const char *utf8text, Color fg, int ptsize=HQN_DEFAULT_PTSIZE);
 
     /**
      * Set all pixels in the surface to the given color.

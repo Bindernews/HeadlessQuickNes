@@ -88,15 +88,16 @@ int gui_drawLine(lua_State *L)
 int gui_drawText(lua_State *L)
 {
     STATE_GUI(state, gui);
-    int x, y;
+    int x, y, ptsize;
     const char *text;
     Color fg;
 
-    x = lua_tointeger(L, 1);
-    y = lua_tointeger(L, 2);
+    x = luaL_checkint(L, 1);
+    y = luaL_checkint(L, 2);
     text = lua_tostring(L, 3);
     fg = parseColor(L, 4, BLACK);
-    gui->getOverlay().drawText(x, y, text, fg);
+    ptsize = luaL_optint(L, 5, HQN_DEFAULT_PTSIZE);
+    gui->getOverlay().drawText(x, y, text, fg, ptsize);
     return 0;
 }
 

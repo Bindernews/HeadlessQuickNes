@@ -25,7 +25,6 @@ namespace hqn
 #else
 #error Failed to determine default font path for platform
 #endif
-#define DEFAULT_FONT_SIZE 12
 
 // const float pi = 3.14159265359;
 const float pi = 3.14159265359f;
@@ -242,7 +241,7 @@ void Surface::safeLine(int x1, int y1, int x2, int y2, Color color)
     }
 }
 
-void Surface::drawText(int x, int y, const char *text, Color fg)
+void Surface::drawText(int x, int y, const char *text, Color fg, int ptsize)
 {
     SDL_Surface *surfsUp;
     SDL_Rect dest;
@@ -253,7 +252,7 @@ void Surface::drawText(int x, int y, const char *text, Color fg)
     dest.y = y;
     color = { fg.r, fg.g, fg.b, fg.a };
 
-    font = (TTF_Font*)loadFont(DEFAULT_FONT, DEFAULT_FONT_SIZE);
+    font = (TTF_Font*)loadFont(DEFAULT_FONT, ptsize);
     TTF_SizeUTF8(font, text, &dest.w, &dest.h);
     surfsUp = TTF_RenderUTF8_Solid(font, text, color);
     SDL_BlitSurface(surfsUp, nullptr, m_surface, &dest);
