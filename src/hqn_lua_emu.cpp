@@ -65,11 +65,17 @@ namespace hqn_lua
 	}
 
 	extern "C" DLLEXPORT
-	void *hqn_lua_emu_getpixels()
+	void *hqn_lua_emu_getpixels(const int32_t *palette)
 	{
 		HQN_STATE(state);
-		state->blit(pixelBuffer, HQNState::NES_VIDEO_PALETTE, 0, 0, 0, 0);
+		state->blit(pixelBuffer, palette, 0, 0, 0, 0);
 		return (void*)pixelBuffer;
+	}
+
+	extern "C" DLLEXPORT
+	const int32_t *hqn_lua_emu_defaultpalette()
+	{
+		return HQNState::NES_VIDEO_PALETTE;
 	}
 
 }
