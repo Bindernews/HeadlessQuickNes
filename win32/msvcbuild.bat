@@ -69,5 +69,6 @@ rem Compile HQN as a dll
 %HQCOMPILE% /DHQNES_SHARED=1 /I"..\quicknes" /I"..\LuaJIT\src" /I"..\SDL2\include" %SRC_HQN%
 %HQLINK% /DLL /out:%TARGET% /LIBPATH:"..\SDL2\lib\x86" *.obj "..\LuaJIT\src\lua51.lib" ^
     SDL2.lib SDL2main.lib SDL2_ttf.lib "%LIB_QUICKNES%"
+COPY /Y ..\hqnes.lua ..\bin\hqnes.lua
 DEL *.obj
 :END

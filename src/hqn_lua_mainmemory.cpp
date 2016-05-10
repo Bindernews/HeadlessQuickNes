@@ -48,7 +48,7 @@ int mainmemory_init_(lua_State *L)
 		{ nullptr, nullptr }
     };
 
-    luaL_register(L, "mainmemory", functionList);
+    hqnL_register(L, "mainmemory", functionList);
     return 0;
 }
 

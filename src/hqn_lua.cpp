@@ -3,11 +3,15 @@
 #include <SDL.h>
 #include <SDL_ttf.h>
 
-#define HQN_STATE_REF "_hqn_state"
 #define SDL_INIT_FAILED_MSG "Failed to initialize SDL: %s"
 
 namespace hqn_lua
 {
+
+// Yep. Global state. Shared by the whole Lua interface.
+static HQNState *globalState;
+
+
 	/* Delcarations for all the init functions. */
 	int emu_init_(lua_State *L);
     int gui_init_(lua_State *L);
@@ -18,34 +22,42 @@ namespace hqn_lua
 
 void init_nes(lua_State *L, HQNState *state)
 {
-    lua_pushlightuserdata(L, state);
-    lua_setfield(L, LUA_GLOBALSINDEX, HQN_STATE_REF);
+    globalState = state;
 
+    // create new table to store all submodules
+    lua_newtable(L);
+    // initialize all submodules
 	emu_init_(L);
     gui_init_(L);
     input_init_(L);
 	joypad_init_(L);
 	mainmemory_init_(L);
     savestate_init_(L);
+    // end with hqnes table on top of stack
 }
 
-Nes_Emu *hqn_get_nes(lua_State *L)
+Nes_Emu *hqn_get_nes()
 {
-    return hqn_get_state(L)->emu();
+    HQN_STATE(state);
+    return state->emu();
 }
 
-HQNState *hqn_get_state(lua_State *L)
+HQNState *hqn_get_state()
 {
-    lua_getfield(L, LUA_GLOBALSINDEX, HQN_STATE_REF);
-    HQNState *ref = (HQNState*)lua_touserdata(L, -1);
-    lua_pop(L, 1);
-    return ref;
+    return globalState;
 }
 
+void hqnL_register(lua_State *L, const char *k, const luaL_Reg *funcs)
+{
+    lua_newtable(L);
+    luaL_register(L, nullptr, funcs);
+    lua_setfield(L, lua_gettop(L) - 1, k);
 }
+
+} // end of hqn_lua namespace
 
 extern "C"
-int luaopen_hqnes(lua_State *L)
+int luaopen_hqnes_core(lua_State *L)
 {
     if (SDL_Init(0) < 0)
     {
@@ -56,5 +68,5 @@ int luaopen_hqnes(lua_State *L)
         return luaL_error(L, SDL_INIT_FAILED_MSG, SDL_GetError());
     }
     hqn_lua::init_nes(L, new hqn::HQNState());
-    return 0;
+    return 1;
 }

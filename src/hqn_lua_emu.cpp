@@ -6,6 +6,9 @@ namespace hqn_lua
 
 #define NES_PIXEL_COUNT (256 * 240)
 
+	// static buffer used in hqn_lua_getpixels()
+	static int32_t pixelBuffer[NES_PIXEL_COUNT];
+
 	int emu_frameadvance(lua_State *L)
 	{
 		HQN_STATE(state);
@@ -28,40 +31,6 @@ namespace hqn_lua
 		return 1;
 	}
 
-	int emu_getfps(lua_State *L)
-	{
-		HQN_STATE(state);
-		lua_pushnumber(L, state->getFPS());
-		return 1;
-	}
-
-	int emu_getpixels(lua_State *L)
-	{
-		HQN_STATE(state);
-		int tbIndex;  // table index
-		int32_t pixels[NES_PIXEL_COUNT];
-
-		lua_createtable(L, NES_PIXEL_COUNT, 0);
-		tbIndex = lua_gettop(L);
-
-		// Check to prevent NPEs
-		if (state->emu()->frame().pixels == nullptr)
-		{
-			// If there is no pixel data available return an empty table
-			return 1;
-		}
-
-		// blit the pixels
-		state->blit(pixels, HQNState::NES_VIDEO_PALETTE, 0, 0, 0, 0);
-		// now add them to the table
-		for (int i = 0; i < NES_PIXEL_COUNT; i++)
-		{
-			lua_pushnumber(L, pixels[i]);
-			lua_rawseti(L, tbIndex, i + 1);
-		}
-		return 1;
-	}
-
 	int emu_loadrom(lua_State *L)
 	{
 		HQN_STATE(state);
@@ -80,13 +49,28 @@ namespace hqn_lua
 				{ "frameadvance", &emu_frameadvance },
 				{ "setframerate", &emu_setframerate },
 				{ "getframerate", &emu_getframerate },
-				{ "getfps",       &emu_getfps },
-				{ "getpixels",    &emu_getpixels },
 				{ "loadrom",      &emu_loadrom },
 				{ nullptr, nullptr }
 		};
-		luaL_register(L, "emu", funcReg);
+		// add it to the previous table
+		hqnL_register(L, "emu", funcReg);
 		return 0;
 	}
 
+	extern "C" DLLEXPORT
+	double hqn_lua_emu_getfps()
+	{
+		HQN_STATE(state);
+		return state->getFPS();
+	}
+
+	extern "C" DLLEXPORT
+	void *hqn_lua_emu_getpixels()
+	{
+		HQN_STATE(state);
+		state->blit(pixelBuffer, HQNState::NES_VIDEO_PALETTE, 0, 0, 0, 0);
+		return (void*)pixelBuffer;
+	}
+
 }
+

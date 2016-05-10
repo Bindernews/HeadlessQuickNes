@@ -59,7 +59,7 @@ int input_init_(lua_State *L)
             { "getmouse", &input_getmouse },
             { nullptr, nullptr }
     };
-    luaL_register(L, "input", funcReg);
+    hqnL_register(L, "input", funcReg);
     return 0;
 }
 

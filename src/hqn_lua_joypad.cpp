@@ -119,7 +119,7 @@ int joypad_init_(lua_State *L)
 		{ "set", &joypad_set },
 		{ nullptr, nullptr }
 	};
-	luaL_register(L, "joypad", funcReg);
+	hqnL_register(L, "joypad", funcReg);
 	return 0;
 }
 

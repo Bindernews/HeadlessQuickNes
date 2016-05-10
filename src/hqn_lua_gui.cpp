@@ -238,7 +238,7 @@ int gui_init_(lua_State *L)
             { "isenabled",  gui_isenabled },
             { nullptr, nullptr }
     };
-    luaL_register(L, "gui", funcReg);
+    hqnL_register(L, "gui", funcReg);
     return 0;
 }
 

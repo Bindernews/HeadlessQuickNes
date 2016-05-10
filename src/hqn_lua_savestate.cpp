@@ -137,7 +137,7 @@ int savestate_init_(lua_State *L)
         { "savememory", &savestate_savememory },
         { nullptr, nullptr }
     };
-    luaL_register(L, "savestate", reg);
+    hqnL_register(L, "savestate", reg);
     return 0;
 }
 

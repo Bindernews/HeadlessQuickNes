@@ -1,8 +1,7 @@
 
 LIB_QUICKNES = ../quicknes/libquicknes.a
-LIB_LUAJIT = ../LuaJIT/src/libluajit.so
 LINKFLAGS = -L ../quicknes/ -lSDL2_ttf -lquicknes -ldl `pkg-config --libs sdl2 luajit`
-CXXFLAGS = -std=c++11 -I ../quicknes -I ../LuaJIT/src -O3 -Wno-multichar -fno-exceptions -fpermissive -fPIC \
+CXXFLAGS = -std=c++11 -I ../quicknes -O3 -Wno-multichar -fno-exceptions -fpermissive -fPIC \
 		   `pkg-config --cflags sdl2 luajit`
 
 SOURCES = \
@@ -18,8 +17,6 @@ SOURCES = \
 	../src/hqn_gui_controller.cpp \
 	../src/hqn_surface.cpp
 #   ../src/hqn_main.cpp    <-- Don't include this because it's not necessary for shared build
-#   ../src/options.cpp
-#   ../src/gl_include.c
 
 OBJECTS = $(SOURCES:.cpp=.o) \
 
@@ -29,9 +26,6 @@ OBJECTS = $(SOURCES:.cpp=.o) \
 # Build as shared library
 ../hqnes.so: $(OBJECTS) $(LIB_QUICKNES)
 	$(CXX) -o $@ $(OBJECTS) $(LINKFLAGS) -fPIC -shared
-
-../hqnes: $(OBJECTS) $(LIB_QUICKNES) ../src/hqn_main.o
-	$(CXX) -o $@ $(OBJECTS) $(LINKFLAGS)
 
 $(LIB_QUICKNES):
 	$(MAKE) -C ../quicknes/linux
