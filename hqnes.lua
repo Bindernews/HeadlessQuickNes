@@ -1,12 +1,19 @@
 -- hqnes.lua
 -- Load the hqnes library and adds ffi functions.
 
-local core = require "hqnes.core"
+local core
 local ffi = require "ffi"
-local err,hqn = pcall(ffi.load, "hqnes")
-if not err then
+local ok,hqn = pcall(ffi.load, "hqnes")
+if not ok then
     error("Failed to load hqnes library. Did you forget to set LD_LIBRARY_PATH?")
 end
+
+-- Because ffi requires the library to be named libhqnes.so on some platforms
+-- temporarily modify package.cpath to suit our needs.
+local oldCpath = package.cpath
+package.cpath = oldCpath .. ";" .. oldCpath:gsub("(%?)", "lib%1")
+local core = require "hqnes.core"
+package.cpath = oldCpath
 
 ffi.cdef[[
 int32_t *hqn_lua_emu_getpixels(const int32_t *);

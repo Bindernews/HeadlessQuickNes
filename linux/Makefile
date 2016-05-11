@@ -24,7 +24,7 @@ OBJECTS = $(SOURCES:.cpp=.o) \
 	$(CXX) -c -o $@ $< $(CXXFLAGS)
 
 # Build as shared library
-../hqnes.so: $(OBJECTS) $(LIB_QUICKNES)
+../libhqnes.so: $(OBJECTS) $(LIB_QUICKNES)
 	$(CXX) -o $@ $(OBJECTS) $(LINKFLAGS) -fPIC -shared
 
 $(LIB_QUICKNES):
