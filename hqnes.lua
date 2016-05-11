@@ -3,7 +3,10 @@
 
 local core = require "hqnes.core"
 local ffi = require "ffi"
-local hqn = ffi.load("hqnes")
+local err,hqn = pcall(ffi.load, "hqnes")
+if not err then
+    error("Failed to load hqnes library. Did you forget to set LD_LIBRARY_PATH?")
+end
 
 ffi.cdef[[
 int32_t *hqn_lua_emu_getpixels(const int32_t *);
