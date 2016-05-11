@@ -65,11 +65,11 @@ namespace hqn_lua
 	}
 
 	extern "C" DLLEXPORT
-	void *hqn_lua_emu_getpixels(const int32_t *palette)
+	int32_t *hqn_lua_emu_getpixels(const int32_t *palette)
 	{
 		HQN_STATE(state);
 		state->blit(pixelBuffer, palette, 0, 0, 0, 0);
-		return (void*)pixelBuffer;
+		return pixelBuffer;
 	}
 
 	extern "C" DLLEXPORT
